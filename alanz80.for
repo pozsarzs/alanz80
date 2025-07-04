@@ -17,10 +17,13 @@ C *** MAIN SEGMENT ***
 
 C *** VARIABLES AND CONSTANTS ***
       CHARACTER*80 LINE
-      INTEGER I, ERROR, IN, OUT
+      INTEGER I, ERROR, IN, OUT, STATE
+      LOGICAL INPUTDATA, SHOWPROMPT, STEP, TRACE
       COMMON /LINEBUFFER/ LINE
       COMMON /IOUNITS/ IN, OUT
-      DATA IN /5/, OUT /6/
+      DATA ERROR /0/, IN /5/, OUT /6/, STATE /0/
+      DATA INPUTDATA /.FALSE./, SHOWPROMPT /.TRUE./, STEP /.FALSE./,
+     1TRACE /.FALSE./
 
 C *** MESSAGES ***
 1000  FORMAT(3HTM>)
@@ -28,14 +31,22 @@ C *** MESSAGES ***
 1002  FORMAT(47HImplementation of the Turing machine in FORTRAN)
 1003  FORMAT(42H(C) 2025 Pozsar Zsolt <pozsarzs@gmail.com>)
 1004  FORMAT(18HLicence: EUPL v1.2)
-1005  FORMAT(35H- Load program from standard input.)
-1006  FORMAT(49H- The loading is complete and contains no errors.)
-1007  FORMAT(1H_)
+1005  FORMAT(35H- Read program from standard input.)
+1006  FORMAT(24H- Reading is successful.)
+1007  FORMAT(50H- Run Turing machine with following configuration:)
 1008  FORMAT(1H_)
 1009  FORMAT(1H_)
 1010  FORMAT(1H_)
 1011  FORMAT(1H_)
 1012  FORMAT(1H_)
+1013  FORMAT(1H_)
+1014  FORMAT(1H_)
+1015  FORMAT(1H_)
+1016  FORMAT(1H_)
+1017  FORMAT(1H_)
+1018  FORMAT(1H_)
+1019  FORMAT(1H_)
+1020  FORMAT(1H_)
 
 C *** PRINT HEADER ***
       WRITE(OUT, 1001)
@@ -43,43 +54,77 @@ C *** PRINT HEADER ***
       WRITE(OUT, 1003)
       WRITE(OUT, 1004)
 
-C *** LOAD PROGRAM FROM STANDARD INPUT ***
+C *** READ PROGRAM FROM STANDARD INPUT ***
       WRITE(OUT, 1005)
 10    CONTINUE
       READ(IN, 30, END = 20) LINE
       ERROR = INTERPRETER()
-      IF (ERROR.GT.0) GOTO 98
+      IF (ERROR.GT.0) GOTO 97
       GOTO 10
 20    CONTINUE
 30    FORMAT(A80)
       WRITE(OUT, 1006)
-    
-C     (...)  
+      IF (INPUTDATA) CALL PROMPT
 
-C *** LOAD ERROR ***
-98    IF (ERROR.EQ.1) WRITE(OUT, 1007)
-      IF (ERROR.EQ.1) WRITE(OUT, 1008)
-      IF (ERROR.EQ.1) WRITE(OUT, 1009)
-      IF (ERROR.EQ.1) WRITE(OUT, 1010)
-      IF (ERROR.EQ.1) WRITE(OUT, 1011)
-      IF (ERROR.EQ.1) WRITE(OUT, 1012)
+C *** RUN TURING-MACHINE ***
+      WRITE(OUT, 1007)
+  
+      ERROR = MACHINE(SHOWPROMPT, STEP, TRACE)
+      IF (ERROR.GT.0) GOTO 98
+      WRITE(OUT, 1008)
+      GOTO 99
+
+C *** PROGRAM READ ERROR ***
+97    IF (ERROR.EQ.1) WRITE(OUT, 1013)
+      IF (ERROR.EQ.1) WRITE(OUT, 1014)
+      IF (ERROR.EQ.1) WRITE(OUT, 1015)
+      IF (ERROR.EQ.1) WRITE(OUT, 1016)
+
+C *** PROGRAM RUN ERROR ***
+98    IF (ERROR.EQ.1) WRITE(OUT, 1017)
+      IF (ERROR.EQ.1) WRITE(OUT, 1018)
+      IF (ERROR.EQ.1) WRITE(OUT, 1019)
+      IF (ERROR.EQ.1) WRITE(OUT, 1020)
 
 C *** END OF PROGRAM ***
 99    STOP
       END
-      
+
+C *** SEGMENT PROMPT ***
+      SUBROUTINE PROMPT()
+C     (...)
+      RETURN
+      END
+     
 C *** SEGMENT INTERPRETER ***
       INTEGER FUNCTION INTERPRETER()
-      CHARACTER*80 LINE
-      INTEGER I, IN, OUT
+      CHARACTER*4 COL1
+      CHARACTER*80 COL2, LINE
+      INTEGER IN, OUT, STATE, ERROR
       COMMON /IOUNITS/ IN, OUT
       COMMON /LINEBUFFER/ LINE
-      INTEGER IE
-      DATA IE/0/
+      DATA ERROR/0/, STATE/0/
 
-      write(OUT,55) LINE
-55    FORMAT(A80) 
+C     (remove space and tab chars from beginnig of line)
+C     (remove double space and tab chars)
 
-      INTERPRETER=IE
+      READ(LINE, 110) COL1, COL2
+110   FORMAT(A4,1X,A) 
+     
+C     (remove these lines:)
+C      write(OUT,55) '1', STR1
+C      write(OUT,55) '2', STR2
+C55    FORMAT(A,A) 
+C      if (STR1.EQ.'DESC') write(OUT,55) 'DDDD', STR2
+
+      INTERPRETER = ERROR
+      RETURN
+      END
+
+C *** SEGMENT TURING-MACHINE ***
+      INTEGER FUNCTION MACHINE(SP, ST, TR)
+      LOGICAL SP, ST, TR
+C     (...)
+      MACHINE = 0
       RETURN
       END

@@ -59,48 +59,44 @@ This is an example program that demonstrates inputting data into a Turing machin
 ```
 ; It is an example input datafile for AlanZ80
 
-PROGRAM EXAMPLE1
-; Section configuration, this is mandatory
-CONF
-  ; program description
-  D Swapping numbers back and forth
-  ; symbol set without blank symbol
-  S 0123456789
-  ; number of the states without q00
-  |Q| 2
-END CONF
+PROG EXAMPLE1
+; program description
+DESC Swapping numbers back and forth                                           
+; symbol set without blank symbol
+SYMB 0123456789
+; number of the states without q00
+STAT 2
 
 ; Section program card, this is mandatory
-CARD
-  ; qi SjSkDqm SjSkDqm SjSkDqm SjSkDqm ...
-  01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
-  02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __SRR
-END CARD
+CARD BEGIN
+     ; qi SjSkDqm SjSkDqm SjSkDqm SjSkDqm ...
+     ST01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
+     ST02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __S00
+     END
 
 ; Section tape content, this is optional.
-TAPE
-  ; The asterisk indicates the first position:
-  ;    *
-  DATA 0123456789
-  POS 1   
-END TAPE
-
+TAPE BEGIN
+     ; The asterisk indicates the start position (SPOS):
+     ;    *
+     DATA 0123456789
+     SPOS 1
+     END
+                                                                                
 ; Section commands, this is optional.
 ; These commands affect the program running and can be specified 
 ; from the command line.
-CMD
-  ; show all operation
-  TRACE
-  ; It does not ask for input (tape) data, it automatically runs and exits.
-  ; If this is not specified and has a tape section, it will give a prompt
-  ; and expect input data after running. If there is no tape section, you
-  ; will be waiting for an input without running.
-  NOPROMPT
-  ; run step-by-step
-  STEP
-END CMD
-
-END PROGRAM
+COMM BEGIN
+     ; show all operation
+     TRACE
+     ; It does not ask for input (tape) data, it automatically runs and exits.
+     ; If this is not specified and has a tape section, it will give a prompt
+     ; and expect input data after running. If there is no tape section, you
+     ; will be waiting for an input without running.
+     NOPROMPT
+     ; run step-by-step
+     STEP
+     END
+END
 ```
 
 The CONF section specifies the number of states and the symbol set used by the machine. The algorithm in the CODE section will be checked against these.

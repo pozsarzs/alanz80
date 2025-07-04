@@ -4,35 +4,19 @@
 
 ## About Turing machine
 
-A Turing machine is a mathematical model of computation describing an abstract
-machine that manipulates symbols on a strip of tape according to a table of
-rules. Despite the model's simplicity, it is capable of implementing any
+A Turing machine is a mathematical model of computation describing an abstract machine that manipulates symbols on a strip of tape according to a table of rules. Despite the model's simplicity, it is capable of implementing any
 computer algorithm.
 
-The machine operates on an infinite memory tape divided into discrete cells,each
-of which can hold a single symbol drawn from a finite set of symbols called the
-alphabet of the machine. It has a "head" that, at any point in the machine's
-operation, is positioned over one of these cells, and a "state" selected from a
-finite set of states. At each step of its operation, the head reads the symbol
-in its cell. Then, based on the symbol and the machine's own present state, the
-machine writes a symbol into the same cell, and moves the head one step to the
-left or the right, or halts the computation. The choice of which replacement
-symbol to write, which direction to move the head, and whether to halt is based
-on a finite table that specifies what to do for each combination of the current
-state and the symbol that is read. As with a real computer program, it is
-possible for a Turing machine to go into an infinite loop which will never halt.
+The machine operates on an infinite memory tape divided into discrete cells,each of which can hold a single symbol drawn from a finite set of symbols called the alphabet of the machine. It has a "head" that, at any point in the machine's
+operation, is positioned over one of these cells, and a "state" selected from a finite set of states. At each step of its operation, the head reads the symbol in its cell. Then, based on the symbol and the machine's own present state, the
+machine writes a symbol into the same cell, and moves the head one step to the left or the right, or halts the computation. The choice of which replacement symbol to write, which direction to move the head, and whether to halt is based on a finite table that specifies what to do for each combination of the current state and the symbol that is read. As with a real computer program, it is possible for a Turing machine to go into an infinite loop which will never halt.
 
-The Turing machine was invented in 1936 by Alan Turing, who called it an
-"a-machine" (automatic machine).[1]
+The Turing machine was invented in 1936 by Alan Turing, who called it an "a-machine" (automatic machine). [^1]
 
-(Source: Wikipedia – Turing machine, CC BY-SA 4.0)[2]
-
-An abstract machine is a formal model for describing the behavior of systems
-that produce outputs in response to inputs and maintain an internal state.
+(Source: Wikipedia – Turing machine, CC BY-SA 4.0) [^2]
 
 
 ## About this implementation
-
 
 (..)
 
@@ -50,7 +34,7 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |programming language    |Microsoft Fortran-80                                 |
 |architecture            |Z80                                                  |
 |OS                      |CP/M                                                 |
-|character set           |up to 20 characters                                  |
+|character set           |up to 40 characters                                  |
 |state set               |up to 100 states                                     |
 |virtual tape length     |200 cell                                             |
 |example program         |4 scripts                                            |
@@ -68,13 +52,11 @@ Help about instructions
 
 ### A-Machine configuration and operation
 
-The CONF section specifies the number of states and the symbol set used by the
-machine. The algorithm in the CODE section will be checked against these.
+The CONF section specifies the number of states and the symbol set used by the machine. The algorithm in the CODE section will be checked against these.
 
 #### State set
 
-The state is called an m-configuration in Turing terminology. The finite set of
-states is as follows:
+The state is called an m-configuration in Turing terminology. The finite set of states is as follows:
 
 Q = {q00..q99}, where the
 
@@ -82,17 +64,16 @@ Q = {q00..q99}, where the
 - q01 is the mandatory start state,
 - q02-q99 are optional additional states.
 
-The cardinality of the set is at least two, even if less is specified in the
-CONF section.
+The cardinality of the set is at least two, even if less is specified in the CONF section.
 
 #### Tape symbols
 
 Finite set of tape symbols is as follows:
 
-S = {S00..S49}, where the
+S = {S00..S39}, where the
 
 - S00 is the mandatory blank (_) character.
-- S01-S49 is are optional symbols.
+- S01-S39 is are optional symbols.
 
 The set has cardinality at least one, and its first element is always the blank
 symbol. If the first symbol specified in the CONF section is not blank, then it
@@ -125,8 +106,7 @@ following form `01 abL01 __N00`, where the:
 
 ### Program file format
 
-This is an example program that demonstrates inputting data into a Turing
-machine. Explanations are included in the comments.
+This is an example program that demonstrates inputting data into a Turing machine. Explanations are included in the comments.
 
 ```
 ; It is an example input datafile for AlanZ80
@@ -177,7 +157,7 @@ END PROGRAM
 ```
 
 [^1]: Wikipedia – Turing machine, CC BY-SA 4.0
-      https://en.wikipedia.org/wiki/Turing_machine
+      (https://en.wikipedia.org/wiki/Turing_machine)
 
-[^1]: "On Computable Numbers, with an Application to the Entscheidungsproblem" 
-      https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf
+[^2]: "On Computable Numbers, with an Application to the Entscheidungsproblem"
+      (https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf)

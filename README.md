@@ -7,9 +7,7 @@
 A Turing machine is a mathematical model of computation describing an abstract machine that manipulates symbols on a strip of tape according to a table of rules. Despite the model's simplicity, it is capable of implementing any
 computer algorithm.
 
-The machine operates on an infinite memory tape divided into discrete cells,each of which can hold a single symbol drawn from a finite set of symbols called the alphabet of the machine. It has a "head" that, at any point in the machine's
-operation, is positioned over one of these cells, and a "state" selected from a finite set of states. At each step of its operation, the head reads the symbol in its cell. Then, based on the symbol and the machine's own present state, the
-machine writes a symbol into the same cell, and moves the head one step to the left or the right, or halts the computation. The choice of which replacement symbol to write, which direction to move the head, and whether to halt is based on a finite table that specifies what to do for each combination of the current state and the symbol that is read. As with a real computer program, it is possible for a Turing machine to go into an infinite loop which will never halt.
+The machine operates on an infinite memory tape divided into discrete cells, each of which can hold a single symbol drawn from a finite set of symbols called the alphabet of the machine. It has a "head" that, at any point in the machine's operation, is positioned over one of these cells, and a "state" selected from a finite set of states. At each step of its operation, the head reads the symbol in its cell. Then, based on the symbol and the machine's own present state, the machine writes a symbol into the same cell, and moves the head one step to the left or the right, or halts the computation. The choice of which replacement symbol to write, which direction to move the head, and whether to halt is based on a finite table that specifies what to do for each combination of the current state and the symbol that is read. As with a real computer program, it is possible for a Turing machine to go into an infinite loop which will never halt.
 
 The Turing machine was invented in 1936 by Alan Turing, who called it an "a-machine" (automatic machine). [^1]
 
@@ -18,7 +16,9 @@ The Turing machine was invented in 1936 by Alan Turing, who called it an "a-mach
 
 ## About this implementation
 
-(..)
+Like Turing's original model, this implementation can only work in three ways. What is different is the physical limitations of the implementation, as it cannot be infinite. The number of states and tape symbols is limited, which is still enough to write a sufficiently complex algorithm. The length of the virtual tape is not infinite and the starting position, where processing starts by default, is halfway along the entire length. The starting position can be changed.
+
+The machine expects the program via standard input, which can be entered manually or by redirection. The program has both mandatory and optional sections. In the mandatory section, the number of states, symbols, and algorithm are defined. In the optional section, the initial contents of the tape can be specified; if there is none, the machine prompts for it. In addition, simple commands can be specified that affect the machine's operation during runtime.
 
 Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>  
 
@@ -34,7 +34,7 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |programming language    |Microsoft Fortran-80                                 |
 |architecture            |Z80                                                  |
 |OS                      |CP/M                                                 |
-|character set           |up to 40 characters                                  |
+|symbol set              |up to 40 characters                                  |
 |state set               |up to 100 states                                     |
 |virtual tape length     |200 cell                                             |
 |example program         |4 scripts                                            |
@@ -50,7 +50,58 @@ Help about instructions
 ![CLI](numswap.png)
 
 
-### A-Machine configuration and operation
+### Configuration and operation
+
+#### Program file format
+
+This is an example program that demonstrates inputting data into a Turing machine. Explanations are included in the comments.
+
+```
+; It is an example input datafile for AlanZ80
+
+PROGRAM EXAMPLE1
+; Section configuration, this is mandatory
+CONF
+  ; program description
+  D Swapping numbers back and forth
+  ; symbol set without blank symbol
+  S 0123456789
+  ; number of the states without q00
+  |Q| 2
+END CONF
+
+; Section program card, this is mandatory
+CARD
+  ; qi SjSkDqm SjSkDqm SjSkDqm SjSkDqm ...
+  01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
+  02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __SRR
+END CARD
+
+; Section tape content, this is optional.
+TAPE
+  ; The asterisk indicates the first position:
+  ;    *
+  DATA 0123456789
+  POS 1   
+END TAPE
+
+; Section commands, this is optional.
+; These commands affect the program running and can be specified 
+; from the command line.
+CMD
+  ; show all operation
+  TRACE
+  ; It does not ask for input (tape) data, it automatically runs and exits.
+  ; If this is not specified and has a tape section, it will give a prompt
+  ; and expect input data after running. If there is no tape section, you
+  ; will be waiting for an input without running.
+  NOPROMPT
+  ; run step-by-step
+  STEP
+END CMD
+
+END PROGRAM
+```
 
 The CONF section specifies the number of states and the symbol set used by the machine. The algorithm in the CODE section will be checked against these.
 
@@ -81,8 +132,6 @@ will be inserted.
 
 #### Operation
 
-Like Turing's original model, this implementation can only work in three ways:
-
 |   |initial state|read|write|move|final state|      5-tuple      |
 |:-:|:-----------:|:--:|:---:|:--:|:---------:|:-----------------:|
 |N1 |      qi     | Sj | Sk  | L  |    qm     |(qi, Sj, Sk, L, qm)|	
@@ -103,58 +152,6 @@ following form `01 abL01 __N00`, where the:
 - `b` and `_` in the groups are symbols to be written,
 - `L` and `N` in the groups are head moving directions,
 - `01` and `00` in the groups are final states.
-
-### Program file format
-
-This is an example program that demonstrates inputting data into a Turing machine. Explanations are included in the comments.
-
-```
-; It is an example input datafile for AlanZ80
-
-PROGRAM EXAMPLE1
-; Section configuration, this is mandatory
-CONF
-  ; program description
-  D Swapping numbers back and forth
-  ; symbol set with or without S00
-  S _0123456789
-  ; number of the states without q00
-  |Q| 2
-END CONF
-
-; Section program card, this is mandatory
-CARD
-  ; qi SjSkDqm SjSkDqm SjSkDqm SjSkDqm ...
-  01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
-  02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __SRR
-END CARD
-
-; Section tape content, this is optional.
-TAPE
-  ; The asterisk indicates the first position:
-  ;     *
-  DATA _0123456789_
-  POS 1   
-END TAPE
-
-; Section commands, this is optional.
-; These commands affect the program running and can be specified 
-; from the command line.
-CMD
-  ; show all operation
-  TRACE
-  ; It does not ask for input (tape) data, it automatically runs and exits.
-  ; If this is not specified and has a tape section, it will give a prompt
-  ; and expect input data after running. If there is no tape section, you
-  ; will be waiting for an input without running.
-  NOPROMPT
-  ; run step-by-step
-  STEP
-END CMD
-
-END PROGRAM
-
-```
 
 [^1]: Wikipedia – Turing machine, CC BY-SA 4.0
       (https://en.wikipedia.org/wiki/Turing_machine)

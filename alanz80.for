@@ -12,94 +12,92 @@ C This program is distributed in the hope that it will be useful, but
 C WITHOUT ANY WARRANTY; without even the implied warranty of
 C MERCHANTABILITY or FITNESS A PARTICULAR PURPOSE.
 
-C *** MAIN SEGMENT ***
+C *** MAIN SEGMENT *****************************************************
       PROGRAM ALANZ80
 
-C *** VARIABLES AND CONSTANTS ***
-      INTEGER I, ERROR, IN, OUT
+C VARIABLES AND CONSTANTS
+      CHARACTER*50 S
+      CHARACTER*200 TAPE
+      INTEGER I, ERROR, IN, OUT, Q
       LOGICAL INPUTDATA, SHOWPROMPT, STEP, TRACE
+      COMMON /BASEDATA/ Q S TAPE
       COMMON /IOUNITS/ IN, OUT
       COMMON /OPMODE/ INPUTDATA, SHOWPROMPT, STEP, TRACE
       DATA ERROR /0/, IN /5/, OUT /6/, STATE /0/
       DATA INPUTDATA /.FALSE./, SHOWPROMPT /.TRUE./, STEP /.FALSE./,
      1TRACE /.FALSE./
 
-C *** MESSAGES ***
+C MESSAGES
 1000  FORMAT(3HTM>)
 1001  FORMAT(21HAlanZ80 v0.1 for CP/M)
 1002  FORMAT(47HImplementation of the Turing machine in FORTRAN)
 1003  FORMAT(42H(C) 2025 Pozsar Zsolt <pozsarzs@gmail.com>)
 1004  FORMAT(18HLicence: EUPL v1.2)
-1005  FORMAT(35H- Read program from standard input.)
+1005  FORMAT(35H- Read program from standard input:)
 1006  FORMAT(24H- Reading is successful.)
-1007  FORMAT(50H- Run Turing machine with following configuration:)
-1008  FORMAT(1H_)
-1009  FORMAT(1H_)
-1010  FORMAT(1H_)
-1011  FORMAT(1H_)
-1012  FORMAT(1H_)
+1007  FORMAT(23H- Start Turing machine.)
+1008  FORMAT(22H- The machine stopped.)
 
-C *** ERROR MESSAGES ***
-1101  FORMAT(31H  Paragraph PROG is not closed!)
-1102  FORMAT(31H  Paragraph CARD is not closed!)
-1103  FORMAT(40H  Optional paragraph TAPE is not closed!)
-1104  FORMAT(40H  Optional paragraph COMM is not closed!)
-1201  FORMAT(1H_)
-1202  FORMAT(1H_)
-1203  FORMAT(1H_)
-1204  FORMAT(1H_)
+C ERROR MESSAGES
+1050  FORMAT(31H  Paragraph PROG is not closed!)
+1051  FORMAT(31H  Paragraph CARD is not closed!)
+1052  FORMAT(40H  Optional paragraph TAPE is not closed!)
+1053  FORMAT(40H  Optional paragraph COMM is not closed!)
+1054  FORMAT(31H  Wrong number of states value!)
+1070  FORMAT(1H_)
+1071  FORMAT(1H_)
+1072  FORMAT(1H_)
+1073  FORMAT(1H_)
 
-C *** PRINT HEADER ***
+C PRINT HEADER
       WRITE(OUT, 1001)
       WRITE(OUT, 1002)
       WRITE(OUT, 1003)
       WRITE(OUT, 1004)
-
-C *** READ PROGRAM FROM STANDARD INPUT ***
+C READ PROGRAM FROM STANDARD INPUT
       WRITE(OUT, 1005)
       ERROR = INTERPRETER()
       IF (ERROR .GT. 0) GOTO 97
       WRITE(OUT, 1006)
       IF (INPUTDATA) CALL PROMPT
-
-C *** RUN TURING-MACHINE ***
+C RUN TURING-MACHINE
       WRITE(OUT, 1007)
-
 C     (...)  
       ERROR = MACHINE(SHOWPROMPT, STEP, TRACE)
       IF (ERROR .GT. 0) GOTO 98
       WRITE(OUT, 1008)
       GOTO 99
-
-C *** PROGRAM READ ERROR ***1
-97    IF (ERROR .EQ. 1) WRITE(OUT, 1101)
-      IF (ERROR .EQ. 2) WRITE(OUT, 1102)
-      IF (ERROR .EQ. 3) WRITE(OUT, 1103)
-      IF (ERROR .EQ. 4) WRITE(OUT, 1104)
-
-C *** PROGRAM RUN ERROR ***
-98    IF (ERROR .EQ. 1) WRITE(OUT, 1201)
-      IF (ERROR .EQ. 2) WRITE(OUT, 1202)
-      IF (ERROR .EQ. 3) WRITE(OUT, 1203)
-      IF (ERROR .EQ. 4) WRITE(OUT, 1204)
-
-C *** END OF PROGRAM ***
+C PROGRAM READ ERROR
+97    IF (ERROR .EQ. 1) WRITE(OUT, 1050)
+      IF (ERROR .EQ. 2) WRITE(OUT, 1051)
+      IF (ERROR .EQ. 3) WRITE(OUT, 1052)
+      IF (ERROR .EQ. 4) WRITE(OUT, 1053)
+      IF (ERROR .EQ. 5) WRITE(OUT, 1054)
+C PROGRAM RUN ERROR
+98    IF (ERROR .EQ. 1) WRITE(OUT, 1070)
+      IF (ERROR .EQ. 2) WRITE(OUT, 1071)
+      IF (ERROR .EQ. 3) WRITE(OUT, 1072)
+      IF (ERROR .EQ. 4) WRITE(OUT, 1073)
+C END OF PROGRAM
 99    STOP
       END
 
-C *** SEGMENT PROMPT ***
+C *** SEGMENT PROMPT ***************************************************
       SUBROUTINE PROMPT()
 C     (...)
       RETURN
       END
-     
-C *** SEGMENT INTERPRETER ***
+    
+C *** SEGMENT INTERPRETER **********************************************
       INTEGER FUNCTION INTERPRETER()
       CHARACTER*4 COL1
+      CHARACTER*50 S
       CHARACTER*80 COL2, LINE
-      INTEGER IN, OUT, ERROR
+      CHARACTER*200 TAPE
+      INTEGER IN, OUT, ERROR, Q
       LOGICAL INPUTDATA, SHOWPROMPT, STEP, TRACE
       LOGICAL BPROG, BCARD, BTAPE, BCOMM, EPROG, ECARD, ETAPE, ECOMM
+      COMMON /BASEDATA/ Q S TAPE
       COMMON /OPMODE/ INPUTDATA, SHOWPROMPT, STEP, TRACE
       COMMON /IOUNITS/ IN, OUT
       DATA ERROR /0/
@@ -107,15 +105,20 @@ C *** SEGMENT INTERPRETER ***
      1BCOMM /.FALSE./ EPROG /.FALSE./, ECARD /.FALSE./,
      2ETAPE /.FALSE./, ECOMM /.FALSE./ 
 
-C     (HERE: remove space and tab chars from beginnig of line)
-C     (HERE: remove double space and tab chars)
-
-110   CONTINUE
-C     READ LINE TO BUFFER
-      READ(IN, 130, END = 120) LINE
-C     INTERPRETING LINE      
-      READ(LINE, 140) COL1, COL2
-140   FORMAT(A4,1X,A) 
+C MESSAGES
+1200  FORMAT(16H  Program name: , A8)
+1201  FORMAT(15H  Description: , A60)
+1202  FORMAT(18H  Set of symbols: , A)
+1203  FORMAT(17H  Set of states: , I2)
+C HERE: remove space and tab chars from beginnig of line
+C HERE: remove double space and tab chars
+200   CONTINUE
+C READ LINE TO BUFFER
+      READ(IN, 1205, END = 210) LINE
+C INTERPRETING LINE
+      READ(LINE, 1204) COL1, COL2
+1204  FORMAT(A4, 1X, A)
+C CHECK BEGIN-END PAIRS
       IF (COL1 .EQ. 'PROG') BPROG = .TRUE.
       IF ((COL1 .EQ. 'CARD') .AND. (COL2 .EQ. 'BEGIN')) BCARD = .TRUE.
       IF ((COL1 .EQ. 'TAPE') .AND. (COL2 .EQ. 'BEGIN')) BTAPE = .TRUE.
@@ -124,25 +127,40 @@ C     INTERPRETING LINE
       IF ((COL1 .EQ. 'CARD') .AND. (COL2 .EQ. 'END')) ECARD = .TRUE.
       IF ((COL1 .EQ. 'TAPE') .AND. (COL2 .EQ. 'END')) ETAPE = .TRUE.
       IF ((COL1 .EQ. 'COMM') .AND. (COL2 .EQ. 'END')) ECOMM = .TRUE.
-
+C GET BASE DATA
+      IF ((COL1 .EQ. 'PROG') .AND. (COL2 .NE. 'END'))
+     1WRITE(OUT, 1200) COL2
+      IF (BPROG .AND. (.NOT. EPROG) .AND. (COL1 .EQ. 'DESC'))
+     1WRITE(OUT, 1201) COL2
+      IF (BPROG .AND. (.NOT. EPROG) .AND. (COL1 .EQ. 'SYMB'))
+     1S = COL2
+      IF (BPROG .AND. (.NOT. EPROG) .AND. (COL1 .EQ. 'STAT'))
+     1READ(COL2, *, ERR = 298) Q
 C     (...)
-      GOTO 110
-120   CONTINUE
-130   FORMAT(A80)
-      IF (BPROG .AND. .NOT. EPROG ) ERROR = 1
-      IF (BCARD .AND. .NOT. ECARD ) ERROR = 2
-      IF (BTAPE .AND. .NOT. ETAPE ) ERROR = 3
-      IF (BCOMM .AND. .NOT. ECOMM ) ERROR = 4
-
+C GET INPUT TAPE DATA
+C     IF (BTAPE .AND. (.NOT. ETAPE) .AND. (COL1 .EQ. 'DATA'))
 C     (...)
-      INTERPRETER = ERROR
+      GOTO 200
+210   CONTINUE
+1205  FORMAT(A80)
+C SHOW BASE DATA
+      WRITE(OUT, 1202) S
+      WRITE(OUT, 1203) Q
+C     (...)
+      IF (BPROG .AND. .NOT. EPROG) ERROR = 1
+      IF (BCARD .AND. .NOT. ECARD) ERROR = 2
+      IF (BTAPE .AND. .NOT. ETAPE) ERROR = 3
+      IF (BCOMM .AND. .NOT. ECOMM) ERROR = 4
+C     (...)
+      GOTO 299
+298   ERROR = 5  
+299   INTERPRETER = ERROR
       RETURN
       END
 
-C *** SEGMENT TURING-MACHINE ***
+C *** SEGMENT TURING-MACHINE *******************************************
       INTEGER FUNCTION MACHINE(SP, ST, TR)
       LOGICAL SP, ST, TR
-
 C     (...)
       MACHINE = 0
       RETURN

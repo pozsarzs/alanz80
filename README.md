@@ -72,7 +72,7 @@ CARD BEGIN
      ; qi SjSkDqm SjSkDqm SjSkDqm SjSkDqm ...
      ST01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
      ST02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __S00
-     END
+CARD END
 
 ; Section tape content, this is optional.
 TAPE BEGIN
@@ -80,7 +80,7 @@ TAPE BEGIN
      ;    *
      DATA 0123456789
      SPOS 1
-     END
+TAPE END
                                                                                 
 ; Section commands, this is optional.
 ; These commands affect the program running and can be specified 
@@ -95,8 +95,9 @@ COMM BEGIN
      NOPROMPT
      ; run step-by-step
      STEP
-     END
-END
+COMM END
+
+PROG END
 ```
 
 The CONF section specifies the number of states and the symbol set used by the machine. The algorithm in the CODE section will be checked against these.

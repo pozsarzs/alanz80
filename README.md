@@ -31,9 +31,9 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |licence                 |EUPL v1.2                                            |
 |language                |en                                                   |
 |user interface          |CLI                                                  |
-|programming language    |Microsoft Fortran-80                                 |
-|architecture            |Z80                                                  |
-|OS                      |CP/M                                                 |
+|programming language    |Borland Turbo Pascal 3.x                             |
+|architecture            |ix86, Z80                                            |
+|OS                      |CP/M and DOS (and others, see comments in the source.|
 |symbol set              |up to 40 characters                                  |
 |state set               |up to 100 states                                     |
 |virtual tape length     |200 cell                                             |
@@ -88,11 +88,6 @@ TAPE END
 COMM BEGIN
      ; show all operation
      TRACE
-     ; It does not ask for input (tape) data, it automatically runs and exits.
-     ; If this is not specified and has a tape section, it will give a prompt
-     ; and expect input data after running. If there is no tape section, you
-     ; will be waiting for an input without running.
-     NOPROMPT
      ; run step-by-step
      STEP
 COMM END

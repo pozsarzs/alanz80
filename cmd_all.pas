@@ -72,6 +72,28 @@ begin
   if not l then writeln(MESSAGE[0]);
 end;
 
+{ COMMAND 'info' }
+procedure cmd_info;
+begin
+  if length(machine.progname) = 0 then writeln(MESSAGE[20]) else
+  begin
+    writeln(MESSAGE[22] + machine.progname + '''');
+    writeln(machine.progdesc);
+    cmd_tape('');
+    cmd_prog;
+  end;
+end;
+
+{ COMMAND 'load' }
+procedure cmd_load(p1: TSplitted);
+begin
+end;
+
+{ COMMAND 'prog' }
+procedure cmd_prog;
+begin
+end;
+
 { COMMAND 'reset' }
 procedure cmd_reset;
 var
@@ -93,8 +115,7 @@ begin
     states := 2;
     symbols := '_';
     tapepos := 1;
-    for b := 1 to 200 do
-      tape[b] := '_';
+    for b := 1 to 200 do tape := tape + '_';
   end;
   qb := 255;
   prg_counter := 0;
@@ -139,7 +160,7 @@ end;
 procedure cmd_symbol(p1: TSplitted);
 var
   c: char;
-  b,bb: byte;
+  b, bb: byte;
   e:   byte;
   s: string[40];
 label
@@ -150,7 +171,7 @@ begin
   if length(p1) = 0 then
   begin
     { get symbol list }
-    writeln(MESSAGE[15], machine.symbols, '''');
+    writeln(MESSAGE[15], machine.symbols, '''.');
   end else
   begin
     if p1 = '-' then
@@ -161,8 +182,9 @@ begin
     end else
     begin
       { set symbol list }
-      for b := 1 to length(p1)
-        do s := upcase(p1);
+      { conversion to uppercase and truncate to 40 }
+      for b := 1 to length(p1) do s := upcase(p1);
+      { remove extra characters }
       for b := 1 to length(s) - 1 do
         for bb := 1 to length(s) - 1 do
           if s[bb] > s[bb + 1] then
@@ -171,7 +193,6 @@ begin
             s[bb] := s[bb + 1];
             s[bb + 1] := c;
           end;
-      { remove extra characters }
       for b := 1 to 40 do
       begin
         if b = length(s) then goto break1;
@@ -186,9 +207,48 @@ begin
       if length(p1) > 40 then writeln(MESSAGE[19]);
       if e = 18 then writeln(MESSAGE[18]);
       machine.symbols := '_' + s;
-      writeln(MESSAGE[17], machine.symbols, '''');
+      writeln(MESSAGE[17], machine.symbols, '''.');
     end;
   end;
+end;
+
+{ COMMAND 'tape' }
+procedure cmd_tape(p1: TSplitted);
+var
+  b: byte;
+  s: string;
+begin
+  { check parameters }
+  if length(p1) = 0 then
+  begin
+    { get symbol list }
+    if tapeisempty then writeln(MESSAGE[23]) else
+    begin
+      s := machine.tape;
+      { remove _ from start of line }
+      while s[1] = '_' do delete(s, 1, 1);
+      { remove _ from end of line }
+      while s[length(s)] = '_' do delete(s, length(s), 1);
+      writeln(MESSAGE[24], s, '''.');
+    end;
+  end else
+  begin
+    for b := 1 to 200 do machine.tape[b] := '_';
+    if p1 = '-' then
+    begin
+      { reset symbol list }
+      writeln(MESSAGE[25])
+    end else
+    begin
+      { set symbol list }
+      { conversion to uppercase and truncate to 40 }
+      for b := 1 to length(p1) do s := upcase(p1);
+      { warning messages }
+      if length(p1) > 50 then writeln(MESSAGE[27]);
+      insert(s, machine.tape, 100);
+      writeln(MESSAGE[24], s, '''.');
+    end;
+  end;  
 end;
 
 { COMMAND 'trace' }

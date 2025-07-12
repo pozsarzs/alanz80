@@ -37,9 +37,10 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |symbol set              |up to 40 characters                                  |
 |state set               |up to 100 states                                     |
 |virtual tape length     |200 cell                                             |
+|tape input data length  |50 cell                                              |
 |example program         |4 scripts                                            |
 |load from file          |from standard input                                  |
-
+|built-in commands       |13 (can also be used in a program file)              |
 
 ### Screenshots
 
@@ -144,6 +145,24 @@ following form `01 abL01 __N00`, where the:
 - `b` and `_` in the groups are symbols to be written,
 - `L` and `N` in the groups are head moving directions,
 - `01` and `00` in the groups are final states.
+
+#### Command line commands
+
+|   |command |description                                 |
+|--:|:------:|:-------------------------------------------|
+|  1|`break` |set, get and reset breakpoint state (qb)    |
+|  2|`help`  |help with using the program                 |
+|  3|`info`  |show all information about this machine     |
+|  4|`load`  |load program file (*.t36)                   |
+|  5|`prog`  |show program data                           |
+|  6|`quit`  |exit the AlanZ80 program                    |
+|  7|`reset` |reset Turing-machine                        |
+|  8|`run`   |run program from head position              |
+|  9|`state` |set and get number of state (|Q|)           |
+| 10|`step`  |run program step-by-step from head position |
+| 11|`symbol`|set, get and reset symbol set (S)           |
+| 12|`tape`  |set, get and reset tape content             |
+| 13|`trace` |turn tracking on and off                    |
 
 [^1]: Wikipedia – Turing machine, CC BY-SA 4.0
       (https://en.wikipedia.org/wiki/Turing_machine)

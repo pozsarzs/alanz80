@@ -19,6 +19,9 @@ uses crt;
 
 {$I declare.pas }
 
+procedure cmd_prog; forward;
+procedure cmd_tape(p1: TSplitted); forward;
+
 { WAIT FOR A KEY - UNCOMMENT CORRESPONDING LINES: }
 
 { TURBO PASCAL > 3.X OR FREEPASCAL }
@@ -58,8 +61,16 @@ begin
    addzero := u;
 end;
 
+{ check tape content }
+function tapeisempty: boolean;
+begin
+  tapeisempty := true;
+  for b := 1 to 200 do
+    if machine.tape[b] <> '_' then tapeisempty := false;
+end;
+
 {$i cmd_all.pas}
-{ $i cmd_run.pas}
+{$i cmd_run.pas}
 
 { PARSING COMMANDS }
 function parsingcommand(command: TCommand): boolean;
@@ -124,16 +135,16 @@ begin
         case b of
            0: cmd_break(splitted[1]);
            1: cmd_help(splitted[1]);
-//         2: cmd_info(splitted[1]);
-//         3: cmd_load(splitted[1]);
-//         4: cmd_prog(splitted[1]);
+           2: cmd_info;
+           3: cmd_load(splitted[1]);
+           4: cmd_prog;
            5: parsingcommand := true;
            6: cmd_reset;
-//         7: cmd_run(false, splitted[1]);
+           7: cmd_run(false, splitted[1]);
            8: cmd_state(splitted[1]);
-//         9: cmd_run(true, splitted[1]);
+           9: cmd_run(true, splitted[1]);
           10: cmd_symbol(splitted[1]);
-//        11: cmd_tape(true, splitted[1]);
+          11: cmd_tape(splitted[1]);
           12: cmd_trace(splitted[1]);
         end;
       end else writeln(MESSAGE[0]);
@@ -150,6 +161,13 @@ begin
   writeln;
   { initialize program memory, program tape, program status and breakpoint }
   cmd_reset;
+
+  // Ne felejtsd törölni!
+  insert('abcdefg_hijklmno', machine.tape, 100);
+  machine.progname := 'EXAMPLE';
+  machine.progdesc := 'Ez egy példaprogam';
+  // Ne felejtsd törölni!
+  
   trace := false;
   writeln(HINT);
   { main operation }

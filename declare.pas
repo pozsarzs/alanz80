@@ -105,15 +105,16 @@ const
                 'The tape symbols are set to ''',//*
                 'Duplicate symbols have been deleted!', //*
                 'The symbol list is too long and has been truncated!', //*
-                'Memory content is imported from ',
-                'Cannot read ',
-                'The binary file size is small.',
-                'Memory content is loaded from ',
-                'Too short line: ',
-                'Illegal character in: ',
+                'No loaded program!', //*
+                'Cannot read ', //*
+                'Program ''',  //*
+                'The tape is empty.', //*
+                'The tape content is ''', //*
+                'The tape content is deleted.',//*
                 'The Turing machine has been reset.', //*
-                'Memory content is saved to ',
+                'The tape data is too long and has been truncated!', //*
                 'Run program from head position ',  //*
                 'Step-by-step execution head position ',//*
                 'Trace on.',//*
                 'Trace off.');//*
+

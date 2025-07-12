@@ -124,30 +124,17 @@ begin
         case b of
            0: cmd_break(splitted[1]);
            1: cmd_help(splitted[1]);
+//         2: cmd_info(splitted[1]);
+//         3: cmd_load(splitted[1]);
+//         4: cmd_prog(splitted[1]);
            5: parsingcommand := true;
            6: cmd_reset;
+//         7: cmd_run(false, splitted[1]);
            8: cmd_state(splitted[1]);
+//         9: cmd_run(true, splitted[1]);
+          10: cmd_symbol(splitted[1]);
+//        11: cmd_tape(true, splitted[1]);
           12: cmd_trace(splitted[1]);
-
-
-//  COMMANDS:     array[0..COMMARRSIZE] of string[5] = ('break', 'help',info 'load',
-//                'prog', 'quit', 'reset', 'run', state 'step',symbol 'tape', 'trace');
-
-
-
-        
-{           2: cmd_deposit(splitted[1], splitted[2], splitted[3],
-                          splitted[4], splitted[5]);
-           3: cmd_dump(splitted[1], splitted[2]);
-           4: cmd_examine(splitted[1]);
-           5: cmd_export(splitted[1]);
-           6: cmd_fill(splitted[1], splitted[2], splitted[3],
-                       splitted[4], splitted[5], splitted[6]);
-           8: cmd_import(splitted[1]);
-           9: cmd_load(splitted[1]);
-          12: cmd_run(false, splitted[1]);
-          13: cmd_save(splitted[1]);
-          14: cmd_run(true, splitted[1]);}
         end;
       end else writeln(MESSAGE[0]);
     end;

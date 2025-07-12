@@ -64,8 +64,8 @@ PROG EXAMPLE1
 DESC Swapping numbers back and forth                                           
 ; symbol set without blank symbol
 SYMB 0123456789
-; number of the states without q00
-STAT 2
+; number of the states with q00
+STAT 3
 
 ; Section program card, this is mandatory
 CARD BEGIN
@@ -87,7 +87,7 @@ TAPE END
 ; from the command line.
 COMM BEGIN
      ; show all operation
-     TRACE
+     TRACE ON
      ; run step-by-step
      STEP
 COMM END
@@ -113,10 +113,10 @@ The cardinality of the set is at least two, even if less is specified in the CON
 
 Finite set of tape symbols is as follows:
 
-S = {S00..S39}, where the
+S = {s00..s39}, where the
 
-- S00 is the mandatory blank (_) character.
-- S01-S39 is are optional symbols.
+- s00 is the mandatory blank (_) character.
+- s01-s39 is are optional symbols.
 
 The set has cardinality at least one, and its first element is always the blank
 symbol. If the first symbol specified in the CONF section is not blank, then it
@@ -124,18 +124,18 @@ will be inserted.
 
 #### Operation
 
-|   |initial state|read|write|move|final state|      5-tuple      |
-|:-:|:-----------:|:--:|:---:|:--:|:---------:|:-----------------:|
-|N1 |      qi     | Sj | Sk  | L  |    qm     |(qi, Sj, Sk, L, qm)|	
-|N2 |      qi     | Sj | Sk  | R  |    qm     |(qi, Sj, Sk, R, qm)|	
-|N3 |      qi     | Sj | Sk  |none|    qm     |(qi, Sj, Sk, N, qm)|	
+|   |initial state|read|write|move |final state|      5-tuple      |
+|:-:|:-----------:|:--:|:---:|:---:|:---------:|:-----------------:|
+|N1 |      qi     | sj | sk  |left |    qm     |(qi, sj, sk, l, qm)|	
+|N2 |      qi     | sj | sk  |right|    qm     |(qi, sj, sk, r, qm)|	
+|N3 |      qi     | sj | sk  |none |    qm     |(qi, sj, sk, n, qm)|	
 
 Note:
-- D is the head moving direction, D = {R, N, L}.
+- D is the head moving direction, D = {r, n, l}.
 - qi is the actual state, qi ∈ Q.
 - qm is the next state, qm ∈ Q.
-- Sj is the actual symbol read from the tape, Sj ∈ S.
-- Sk is the symbol to be written to the tape, Sk ∈ S.
+- sj is the actual symbol read from the tape, sj ∈ S.
+- sk is the symbol to be written to the tape, sk ∈ S.
 
 In the CODE section of the program, the 5-tuples must be specified in the
 following form `01 abL01 __N00`, where the:

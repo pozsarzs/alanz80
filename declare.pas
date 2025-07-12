@@ -81,10 +81,10 @@ const
                 'run [head position]      ',
                 'state [2..99]            ',
                 'step [head position]     ',
-                'symbol [''symbols''|-]     ',
-                'tape [''content''|-]       ',
+                'symbol [symbols|-]       ',
+                'tape [content|-]         ',
                 'trace [on|off]           '));
-  MESSAGE:      array[0..31] of string[39] = (
+  MESSAGE:      array[0..31] of string[51] = (
                 'No such command!', //*
                 'The 1st ',//*
                 'The 2nd ',//*
@@ -100,11 +100,11 @@ const
                 'The breakpoint state is set to ',  //*
                 'The number of states is ', //*
                 'The number of states is set to ',  //*
-                'The value is stored at address ',
-                'The value at address ',
-                'Memory content is exported to ',
-                'Cannot write ',
-                'Memory cells are filled with ',
+                'The tape symbols are ''', //*
+                'The tape symbols are deleted.',//*
+                'The tape symbols are set to ''',//*
+                'Duplicate symbols have been deleted!', //*
+                'The symbol list is too long and has been truncated!', //*
                 'Memory content is imported from ',
                 'Cannot read ',
                 'The binary file size is small.',
@@ -113,7 +113,7 @@ const
                 'Illegal character in: ',
                 'The Turing machine has been reset.', //*
                 'Memory content is saved to ',
-                'Run program from address ',
-                'Step-by-step execution from address ',
-                'Trace on.',
-                'Trace off.');
+                'Run program from head position ',  //*
+                'Step-by-step execution head position ',//*
+                'Trace on.',//*
+                'Trace off.');//*

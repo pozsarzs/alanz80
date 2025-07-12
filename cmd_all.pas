@@ -26,7 +26,7 @@ begin
     { get breakpoint address }
     if qb = 255
       then writeln(MESSAGE[9])
-      else writeln(MESSAGE[10], addzero(qb));
+      else writeln(MESSAGE[10], addzero(qb), '.');
   end else
   begin
     if p1 = '-' then
@@ -42,13 +42,14 @@ begin
       then
         if (ip1 >= 0) and (ip1 <= 99) then e := 0 else e := 11
       else e := 12;
+      { error messages }
       case e of
-        11: writeln(MESSAGE[1] + MESSAGE[8]);
-        12: writeln(MESSAGE[1] + MESSAGE[7]);
+        11: writeln(MESSAGE[16]);
+        12: writeln(MESSAGE[17]);
       else
         begin
           qb := ip1;
-          writeln(MESSAGE[12], addzero(ip1));
+          writeln(MESSAGE[12], addzero(qb), '.');
         end;
       end;
     end;
@@ -90,7 +91,7 @@ begin
         rules[b, bb].Sk := '';
       end;
     states := 2;
-    symbols := '';
+    symbols := '_';
     tapepos := 1;
     for b := 1 to 200 do
       tape[b] := '_';
@@ -113,7 +114,7 @@ begin
   if length(p1) = 0 then
   begin
     { get number of states }
-    writeln(MESSAGE[13], machine.states);
+    writeln(MESSAGE[13], machine.states, '.');
   end else
   begin
     { set number of states }
@@ -128,8 +129,64 @@ begin
     else
       begin
         machine.states := ip1;
-        writeln(MESSAGE[14], ip1);
+        writeln(MESSAGE[14], machine.states, '.');
       end;
+    end;
+  end;
+end;
+
+{ COMMAND 'symbol' }
+procedure cmd_symbol(p1: TSplitted);
+var
+  c: char;
+  b,bb: byte;
+  e:   byte;
+  s: string[40];
+label
+  break1;
+begin
+  e := 0;
+  { check parameters }
+  if length(p1) = 0 then
+  begin
+    { get symbol list }
+    writeln(MESSAGE[15], machine.symbols, '''');
+  end else
+  begin
+    if p1 = '-' then
+    begin
+      { reset symbol list }
+      machine.symbols := '_';
+      writeln(MESSAGE[16])
+    end else
+    begin
+      { set symbol list }
+      for b := 1 to length(p1)
+        do s := upcase(p1);
+      for b := 1 to length(s) - 1 do
+        for bb := 1 to length(s) - 1 do
+          if s[bb] > s[bb + 1] then
+          begin
+            c := s[bb];
+            s[bb] := s[bb + 1];
+            s[bb + 1] := c;
+          end;
+      { remove extra characters }
+      for b := 1 to 40 do
+      begin
+        if b = length(s) then goto break1;
+        if s[b] = s[b + 1] then
+        begin
+         delete(s, b, 1);
+         e := 18;
+        end;
+      end;
+    break1:
+      { warning messages }
+      if length(p1) > 40 then writeln(MESSAGE[19]);
+      if e = 18 then writeln(MESSAGE[18]);
+      machine.symbols := '_' + s;
+      writeln(MESSAGE[17], machine.symbols, '''');
     end;
   end;
 end;

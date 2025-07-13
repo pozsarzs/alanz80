@@ -4,7 +4,7 @@
 PROG NUMSWAP
 DESC Swapping numbers back and forth                                           
 SYMB 0123456789
-STAT 2
+STAT 3
 
 CARD BEGIN
      ST01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02

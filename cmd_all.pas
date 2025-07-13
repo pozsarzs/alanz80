@@ -86,8 +86,115 @@ end;
 
 { COMMAND 'load' }
 procedure cmd_load(p1: TSplitted);
+var
+  b:              byte;
+  stat_mandatory: byte;                      { status byte of mandatory labels }
+  stat_segment:   byte;                      { status byte of program segments }
+  t36file:        text;
+  s:              string[255];
+  line:           byte;
+
+  // Töröld, ha nem kell!
+  address, data:  byte;
+  i1, i2:         integer;
+  e:              byte;
+  ec:             integer;
+const
+  LBEGIN =        'LBEGIN';
+  LCARD =         'CARD';
+  LCOMM =         'LCOMM';
+  LDATA =         'LDATA';
+  LDESC =         'LDESC';
+  LEND =          'LEND';
+  LPROG =         'PROG';
+  LSPOS =         'LSPOS';
+  LSTAT =         'LSTAT';
+  LSYMB =         'LSYMB';
+  LTAPE =         'TAPE';
+
+{ 
+    bit   stat_segment          stat_mandatory
+    ------------------------------------------------------
+    D0    'PROG *' found        'PROG' found and non-empty
+    D1    'PROG END' found      'DESC' found
+    D2    'CARD BEGIN' found    'SYMB' found
+    D3    'CARD END' found      'STAT' found
+    D4    'TAPE BEGIN' found
+    D5    'TAPE END' found
+    D6    'COMM BEGIN' found
+    D7    'COMM END' found
+}
+ 
+label
+  error;
 begin
+  e := 0;
+  stat_mandatory := 0;
+  stat_segment := 0;
+  { check parameters }
+  if length(p1) = 0 then e := 12 else
+  begin
+    assign(t36file, p1);
+    {$I-}
+      reset(t36file);
+    {$I+}
+    if ioresult <> 0 then e := 2 else
+    begin
+      cmd_reset;
+      { read text file content }
+      line := 0;
+      repeat
+        readln(t36file, s);
+        line := line + 1;
+        { - remove _ from start of line }
+        while s[1] = #32 do delete(s, 1, 1);
+        { - remove _ from end of line }
+        while s[length(s)] = #32 do delete(s, length(s), 1);
+        { - convert to uppercase and truncate to 40 }
+        for b := 1 to length(s) do s[b] := upcase(s[b]);
+        { - check comment sign }
+        if s[1] <> COMMENT then
+        begin
+
+
+
+
+        end;
+        until (eof(t36file)) or (line = 99);
+        close(t36file);
+    end;
+  end;
+error:  
+{  case e of
+     2: writeln(MESSAGE[21] + p1 + '.');
+     3: writeln(MESSAGE[24], line);
+     4: writeln(MESSAGE[25], line);
+    12: writeln(MESSAGE[7]);
+  else
+    writeln(MESSAGE[23] + p1 + '.');
+  end;}
 end;
+
+{ Töröld, ha már nem kell!
+PROG NUMSWAP
+DESC Swapping numbers back and forth                                           
+SYMB 0123456789
+STAT 3
+
+CARD BEGIN
+ST01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
+ST02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __S00
+CARD END
+
+TAPE BEGIN
+DATA 0123456789
+SPOS 1
+TAPE END
+COMM BEGIN
+
+COMM END
+PROG END
+}
 
 { COMMAND 'prog' }
 procedure cmd_prog;
@@ -99,6 +206,7 @@ procedure cmd_reset;
 var
   b, bb: byte;
 begin
+  { reset machine configuration }
   with machine do
   begin
     progdesc := '';
@@ -113,10 +221,11 @@ begin
         rules[b, bb].Sk := '';
       end;
     states := 2;
-    symbols := '_';
+    symbols := SPACE;
     tapepos := 1;
-    for b := 1 to 200 do tape := tape + '_';
+    for b := 1 to 200 do tape := tape + SPACE;
   end;
+  { reset program status }
   qb := 255;
   prg_counter := 0;
   prg_status := 0;
@@ -145,8 +254,8 @@ begin
       if (ip1 >= 2) and (ip1 <= 99) then e := 0 else e := 11
     else e := 12;
     case e of
-      11: writeln(MESSAGE[1] + MESSAGE[8]);
-      12: writeln(MESSAGE[1] + MESSAGE[7]);
+      11: writeln(MESSAGE[8]);
+      12: writeln(MESSAGE[7]);
     else
       begin
         machine.states := ip1;
@@ -177,14 +286,15 @@ begin
     if p1 = '-' then
     begin
       { reset symbol list }
-      machine.symbols := '_';
+      machine.symbols := SPACE;
       writeln(MESSAGE[16])
     end else
     begin
       { set symbol list }
-      { conversion to uppercase and truncate to 40 }
-      for b := 1 to length(p1) do s := upcase(p1);
-      { remove extra characters }
+      s := p1;
+      { - convert to uppercase and truncate to 40 }
+      for b := 1 to length(p1) do s[b] := upcase(s[b]);
+      { - remove extra characters }
       for b := 1 to length(s) - 1 do
         for bb := 1 to length(s) - 1 do
           if s[bb] > s[bb + 1] then
@@ -206,7 +316,7 @@ begin
       { warning messages }
       if length(p1) > 40 then writeln(MESSAGE[19]);
       if e = 18 then writeln(MESSAGE[18]);
-      machine.symbols := '_' + s;
+      machine.symbols := SPACE + s;
       writeln(MESSAGE[17], machine.symbols, '''.');
     end;
   end;
@@ -225,15 +335,15 @@ begin
     if tapeisempty then writeln(MESSAGE[23]) else
     begin
       s := machine.tape;
-      { remove _ from start of line }
-      while s[1] = '_' do delete(s, 1, 1);
-      { remove _ from end of line }
-      while s[length(s)] = '_' do delete(s, length(s), 1);
+      { - remove _ from start of line }
+      while s[1] = SPACE do delete(s, 1, 1);
+      { - remove _ from end of line }
+      while s[length(s)] = SPACE do delete(s, length(s), 1);
       writeln(MESSAGE[24], s, '''.');
     end;
   end else
   begin
-    for b := 1 to 200 do machine.tape[b] := '_';
+    for b := 1 to 200 do machine.tape[b] := SPACE;
     if p1 = '-' then
     begin
       { reset symbol list }
@@ -241,9 +351,9 @@ begin
     end else
     begin
       { set symbol list }
-      { conversion to uppercase and truncate to 40 }
+      { - conversion to uppercase and truncate to 40 }
       for b := 1 to length(p1) do s := upcase(p1);
-      { warning messages }
+      { - warning messages }
       if length(p1) > 50 then writeln(MESSAGE[27]);
       insert(s, machine.tape, 100);
       writeln(MESSAGE[24], s, '''.');
@@ -263,7 +373,7 @@ begin
       if upcase(p1) = 'OFF' then trace := false else
       e := 11;
   if e = 11
-    then writeln(MESSAGE[1] + MESSAGE[8])
+    then writeln(MESSAGE[8])
     else
       if trace then writeln(MESSAGE[30]) else writeln(MESSAGE[31]);
 end;

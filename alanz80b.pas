@@ -13,43 +13,38 @@
   FOR A PARTICULAR PURPOSE. }
 
 program alanz80;
-
-{ UNCOMMENT THIS IF YOU COMPILE THIS WITH TURBO PASCAL > 3.X OR FREEPASCAL: }
+{ Uncomment the next lines if you are compiling with TP > 3.x or Freepascal }
 uses crt;
 
 {$I declare.pas }
 
 procedure cmd_prog; forward;
+procedure cmd_reset; forward;
 procedure cmd_tape(p1: TSplitted); forward;
 
-{ WAIT FOR A KEY - UNCOMMENT CORRESPONDING LINES: }
-
-{ TURBO PASCAL > 3.X OR FREEPASCAL }
+{ WAIT FOR A KEY }
 procedure waitforkey;
-begin
-  readkey;
-end;
-
-{ TURBO PASCAL 3.X ON DOS }
-{ procedure waitforkey;
-  type
+{ Uncomment the next lines if you are compiling with Turbo Pascal 3.x on DOS }
+{ type
     TRegPack = record
                  AX, BX, CX, DX, BP, SI, DI, DS, ES, Flags: integer;
                end;
   var
-    regs:    TRegPack;
-  begin
-    regs.AX := $0100;
-    msdos(regs);
-    writeln;
-  end; }
+    regs:    TRegPack; }
 
-{ TURBO PASCAL 3.X ON CP/M }
-{ procedure waitforkey;
-  begin
-    bdos(1);
-    writeln;
-  end;}
+begin
+  { Uncomment the next lines if you are compiling with TP > 3.x or Freepascal }
+  readkey;
+
+  { Uncomment the next lines if you are compiling with Turbo Pascal 3.x on DOS }
+  { regs.AX := $0100;
+    msdos(regs);
+    writeln; }
+
+  { Uncomment the next lines if you are compiling with Turbo Pascal 3.x on CP/M }
+  { bdos(1);
+    writeln; }
+end; 
 
 { INSERT ZERO BEFORE [0-9] }
 function addzero(v: integer): TTwoDigit;
@@ -61,12 +56,12 @@ begin
    addzero := u;
 end;
 
-{ check tape content }
+{ CHECK TAPE CONTENT }
 function tapeisempty: boolean;
 begin
   tapeisempty := true;
   for b := 1 to 200 do
-    if machine.tape[b] <> '_' then tapeisempty := false;
+    if machine.tape[b] <> SPACE then tapeisempty := false;
 end;
 
 {$i cmd_all.pas}
@@ -84,13 +79,13 @@ begin
   parsingcommand := false;
   if (length(command) > 0) then
   begin
-    { remove space and tab from start of line }
+    { - remove space and tab from start of line }
     while (command[1] = #32) or (command[1] = #9) do
       delete(command, 1, 1);
-    { remove space and tab from end of line }
+    { - remove space and tab from end of line }
     while (command[length(command)] = #32) or (command[length(command)] = #9) do
       delete(command, length(command), 1);
-    { remove extra space and tab from line }
+    { - remove extra space and tab from line }
     for b := 1 to 255 do
     begin
       if b = length(command) then goto break1;
@@ -103,7 +98,7 @@ begin
     for b := 1 to length(command) do
       if command[b] <> '@' then s := s + command[b];
     command := s;
-    { split command to 8 slices }
+    { - split command to 8 slices }
     for b := 0 to 7 do
       splitted[b] := '';
     for a := 1 to length(command) do

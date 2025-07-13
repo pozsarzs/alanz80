@@ -29,23 +29,24 @@ type
     tapepos:    byte;                                          { head position }
     tape:       string[200];                                            { tape }
   end;
-  TCommand =    string[255];
+  TCommand =    string[255];                   { different length string types }
   TFilename =   string[12];
   TSplitted =   string[64];
   TTwoDigit =   string[2];
 var
   b:            byte;
   com:          TCommand;                               { command line content }
-  machine:      TTuring;
+  machine:      TTuring;                        { Turing machine configuration }
   prg_counter:  byte;                                        { program counter }
   prg_status:   byte;                   { program status 0/1/2 stop/run/paused }
   qb:           byte;                                     { breakpoint address }
-  quit:         boolean;
+  quit:         boolean;                                          { allow exit }
   splitted:     array[0..7] of TSplitted;                   { splitted command }
   trace:        boolean;                                       { turn tracking }
 const
   COMMARRSIZE = 12;
-  COMMENT =     ';';
+  COMMENT =     #59;
+  SPACE =       #95;
   { UNCOMMENT CORRESPONDING LINES: }
   HEADER1 =     'AlanZ80 v0.1 for CP/M';
   { HEADER1 =     'AlanZ80 v0.1 for DOS'; }
@@ -86,35 +87,34 @@ const
                 'trace [on|off]           '));
   MESSAGE:      array[0..31] of string[51] = (
                 'No such command!', //*
-                'The 1st ',//*
-                'The 2nd ',//*
-                'The 3rd ',//*
-                'The 4th ',//*
-                'The 5th ',//*
-                'The 6th ',//*
-                'parameter is bad or missing.',//*
-                'parameter value is incorrect.',//*
-                'No breakpoint state set.',//*
-                'The breakpoint state is ', //*
-                'The breakpoint state is deleted.',  //*
-                'The breakpoint state is set to ',  //*
-                'The number of states is ', //*
-                'The number of states is set to ',  //*
-                'The tape symbols are ''', //*
-                'The tape symbols are deleted.',//*
-                'The tape symbols are set to ''',//*
-                'Duplicate symbols have been deleted!', //*
-                'The symbol list is too long and has been truncated!', //*
-                'No loaded program!', //*
-                'Cannot read ', //*
-                'Program ''',  //*
-                'The tape is empty.', //*
-                'The tape content is ''', //*
-                'The tape content is deleted.',//*
-                'The Turing machine has been reset.', //*
-                'The tape data is too long and has been truncated!', //*
-                'Run program from head position ',  //*
-                'Step-by-step execution head position ',//*
-                'Trace on.',//*
-                'Trace off.');//*
-
+                '',
+                '',   
+                '',   
+                '',   
+                '',   
+                '',   
+                'Command parameter is bad or missing.',
+                'Command parameter value is incorrect.',
+                'No breakpoint state set.',
+                'The breakpoint state is ',
+                'The breakpoint state is deleted.',
+                'The breakpoint state is set to ',
+                'The number of states is ',
+                'The number of states is set to ',
+                'The tape symbols are ''',
+                'The tape symbols are deleted.',
+                'The tape symbols are set to ''',
+                'Duplicate symbols have been deleted!',
+                'The symbol list is too long and has been truncated!',
+                'No loaded program!',
+                'Cannot read ',
+                'Program ''',
+                'The tape is empty.',
+                'The tape content is ''',
+                'The tape content is deleted.',
+                'The Turing machine has been reset.',
+                'The tape data is too long and has been truncated!',
+                'Run program from head position ',
+                'Step-by-step execution head position ',
+                'Trace on.',
+                'Trace off.');

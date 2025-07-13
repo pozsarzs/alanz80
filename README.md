@@ -151,7 +151,7 @@ following form `01 abL01 __N00`, where the:
 The program can be controlled with the following command line commands.
 
 |   |command                |description                                 |
-|--:|:---------------------:|:-------------------------------------------|
+|--:|-----------------------|--------------------------------------------|
 |  1|`break [01..99\|-]`    |set, get and reset breakpoint state (qb)    |
 |  2|`help [command]`       |help with using the program                 |
 |  3|`info`                 |show all information about this machine     |
@@ -160,14 +160,13 @@ The program can be controlled with the following command line commands.
 |  6|`quit`                 |exit the AlanZ80 program                    |
 |  7|`reset`                |reset Turing-machine                        |
 |  8|`run [head position]`  |run program from head position              |
-|  9|`state [2..99]`        |set and get number of state (|Q|)           |
+|  9|`state [2..99]`        |set and get number of state (\|Q\|)         |
 | 10|`step [head position]` |run program step-by-step from head position |
 | 11|`symbol [symbols\|-]`  |set, get and reset symbol set (S)           |
 | 12|`tape [content\|-]`    |set, get and reset tape content             |
 | 13|`trace [on\|off]`      |turn tracking on and off                    |
 
-[^1]: Wikipedia – Turing machine, CC BY-SA 4.0
-      (https://en.wikipedia.org/wiki/Turing_machine)
+[^1]: ["On Computable Numbers, with an Application to the Entscheidungsproblem"](https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf)
 
-[^2]: "On Computable Numbers, with an Application to the Entscheidungsproblem"
-      (https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf)
+[^2]: [Wikipedia – Turing machine, CC BY-SA 4.0](https://en.wikipedia.org/wiki/Turing_machine)
+

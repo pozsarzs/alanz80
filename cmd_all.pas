@@ -88,7 +88,7 @@ end;
 procedure cmd_load(p1: TSplitted);
 var
   b:              byte;
-  ec:             integer;
+  ec:          integer;
   lab, seg:       byte;
   line:           byte;
   s, ss:          string[255];
@@ -97,8 +97,8 @@ var
   t36file:        text;
 
   // Töröld, ha nem kell!
-  i1, i2:         integer;
   e:              byte;
+
 const
   LSEGMENTS:      array[0..3] of string[4] = ('PROG', 'CARD', 'TAPE', 'COMM');
   LLABELS:        array[0..4] of string[4] = ('NAME', 'DESC', 'SYMB', 'STAT',
@@ -159,7 +159,7 @@ begin
           begin
             { - segment is valid }
             case seg of
-              0: { PROG found}
+              0: { PROG found }
                  begin
                    { - PROG BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
@@ -168,7 +168,7 @@ begin
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $02;
                  end; 
-              1: { CARD found}
+              1: { CARD found }
                  begin
                    { - CARD BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
@@ -177,7 +177,7 @@ begin
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $08;
                  end;    
-              2: { TAPE found}
+              2: { TAPE found }
                  begin
                    { - TAPE BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
@@ -186,7 +186,7 @@ begin
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $20;
                  end;    
-              3: { COMM found}
+              3: { COMM found }
                  begin
                    { - COMM BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
@@ -205,7 +205,7 @@ begin
           begin
             { - label is valid }
             case lab of
-              0: { NAME found}
+              0: { NAME found }
                  if stat_segment = $01 then
                  begin
                    { - in the opened segment PROG }
@@ -213,7 +213,7 @@ begin
                    for b := 5 to length(s) do
                        machine.progname := machine.progname + s[b];
                  end;
-              1: { DESC found}
+              1: { DESC found }
                  if stat_segment = $01 then
                  begin
                    { - in the opened segment PROG }
@@ -221,7 +221,7 @@ begin
                    for b := 5 to length(s) do
                      machine.progdesc := machine.progdesc + s[b];
                  end;
-              2: { SYMB found}
+              2: { SYMB found }
                  if stat_segment = $01 then
                  begin
                    { - in the opened segment PROG }
@@ -236,7 +236,7 @@ begin
                      ss := ss + s[b];
                    insert(ss, machine.tape, 100);
                  end;
-              3: { STAT found}
+              3: { STAT found }
                  if stat_segment = $01 then
                  begin
                    { - in the opened segment PROG }
@@ -249,10 +249,10 @@ begin
                    // Érték és hiba kiértékelés ide!
 
                  end;
-              4: { SPOS found}
+              4: { SPOS found }
                  if stat_segment = $11 then
                  begin
-                   { - in the opened segment PROG }
+                   { - in the opened segment PROG and TAPE }
                    ss := '';
                    for b := 5 to length(s) do
                      ss := ss + s[b];
@@ -262,14 +262,36 @@ begin
 
                  end;
             end;
+          end;
+          if (s[1] + s[2] = 'ST') and (stat_segment = $05) then
+          begin
+            { SPOS found in the opened segment PROG and CARD }
+            { - remove all spaces and tabulators }
+            ss := '';
+            for b := 1 to length(s) do
+              if (s[b] <> #32) and (s[b] <> #9) then ss := ss + s[b];
 
-            // Program betöltés ide!
-            // ST0101R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
+            { Töröld, ha már nem kell! }
+            writeln('qi: ', s[3] + s[4]);
 
+            delete(ss, 1, 4);
+            b := 0;
+            while (length(ss) >= (b * 5 + 5)) and (b < 51) do
+            begin
+
+              { Töröld, ha már nem kell! }
+              writeln('sj: ', ss[b * 5 + 1]);
+              writeln('sk: ', ss[b * 5 + 2]);
+              writeln('d:  ', ss[b * 5 + 3]);
+              writeln('qm: ', ss[b * 5 + 4] + ss[b * 5 + 5]);
+              writeln;
+              b := b + 1;
+
+            end;
           end;
         end;
       until (eof(t36file)) or (line = 255);
-        close(t36file);
+      close(t36file);
     end;
   end;
 error:  

@@ -60,7 +60,8 @@ This is an example program that demonstrates inputting data into a Turing machin
 ```
 ; It is an example input datafile for AlanZ80
 
-PROG EXAMPLE1
+PROG BEGIN
+NAME EXAMPLE1
 ; program description
 DESC Swapping numbers back and forth                                           
 ; symbol set without blank symbol
@@ -79,7 +80,7 @@ CARD END
 TAPE BEGIN
      ; The asterisk indicates the start position (SPOS):
      ;    *
-     DATA 0123456789
+     SYMB 0123456789
      SPOS 1
 TAPE END
                                                                                 

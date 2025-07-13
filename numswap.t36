@@ -1,7 +1,8 @@
 ; Example program file for AlanZ80 Turing machine implementation
 ; The program swaps the numbers, prints the steps, and then exits.
 
-PROG NUMSWAP
+PROG BEGIN
+NAME NUMSWAP
 DESC Swapping numbers back and forth                                           
 SYMB 0123456789
 STAT 3
@@ -12,7 +13,7 @@ CARD BEGIN
 CARD END
 
 TAPE BEGIN
-     DATA 0123456789
+     SYMB 0123456789
      SPOS 1
 TAPE END
 COMM BEGIN

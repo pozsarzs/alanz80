@@ -87,7 +87,7 @@ end;
 { COMMAND 'load' }
 procedure cmd_load(p1: TSplitted);
 var
-  b:              byte;
+  b, l:           byte;
   stat_mandatory: byte;                      { status byte of mandatory labels }
   stat_segment:   byte;                      { status byte of program segments }
   t36file:        text;
@@ -100,22 +100,16 @@ var
   e:              byte;
   ec:             integer;
 const
-  LBEGIN =        'LBEGIN';
-  LCARD =         'CARD';
-  LCOMM =         'LCOMM';
-  LDATA =         'LDATA';
-  LDESC =         'LDESC';
-  LEND =          'LEND';
-  LPROG =         'PROG';
-  LSPOS =         'LSPOS';
-  LSTAT =         'LSTAT';
-  LSYMB =         'LSYMB';
-  LTAPE =         'TAPE';
+  LSEGMENTS:      array[0..3] of string[4] = ('PROG', 'CARD', 'TAPE', 'COMM');
+  LLABELS:        array[0..4] of string[4] = ('NAME', 'DESC', 'STAT', 'SYMB',
+                  'SPOS');
+  LBEGIN =        'BEGIN';
+  LEND =          'END';
 
 { 
-    bit   stat_segment          stat_mandatory
-    ------------------------------------------------------
-    D0    'PROG *' found        'PROG' found and non-empty
+    bit   stat_segment          stat_mandatory (in PROG)
+    ----------------------------------------------------
+    D0    'PROG BEGIN' found    'NAME' found
     D1    'PROG END' found      'DESC' found
     D2    'CARD BEGIN' found    'SYMB' found
     D3    'CARD END' found      'STAT' found
@@ -146,21 +140,65 @@ begin
       repeat
         readln(t36file, s);
         line := line + 1;
-        { - remove _ from start of line }
-        while s[1] = #32 do delete(s, 1, 1);
-        { - remove _ from end of line }
-        while s[length(s)] = #32 do delete(s, length(s), 1);
+        { - remove space and tabulator from start of line }
+        while (s[1] = #32) or (s[1] = #9) do delete(s, 1, 1);
+        { - remove space and tabulator from end of line }
+        while (s[length(s)] = #32) or (s[1] = #9) do delete(s, length(s), 1);
         { - convert to uppercase and truncate to 40 }
         for b := 1 to length(s) do s[b] := upcase(s[b]);
         { - check comment sign }
         if s[1] <> COMMENT then
         begin
-
-
-
-
+          { search segment }
+          l := 255;
+          for b := 0 to 3 do
+            if s[1] + s[2] + s[3] + s[4] = LSEGMENTS[b] then l := b;
+          if l < 255 then
+          begin
+            { - segment is valid }
+            { - remove space and tabulator after label }
+            while (s[1] = #32) or (s[5] = #9) do delete(s, 5, 1);
+            case l of
+              0: { PROG found}
+                 begin
+                   { - PROG BEGIN found }
+                   if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
+                     then stat_mandatory := stat_mandatory or $01;
+                   { - PROG END found }
+                   if s[5] + s[6] + s[7] = LEND
+                     then stat_mandatory := stat_mandatory or $02;
+                 end; 
+              1: { CARD found}
+                 begin
+                   { - CARD BEGIN found }
+                   if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
+                     then stat_mandatory := stat_mandatory or $04;
+                   { - CARD END found }
+                   if s[5] + s[6] + s[7] = LEND
+                     then stat_mandatory := stat_mandatory or $08;
+                 end;    
+              2: { TAPE found}
+                 begin
+                   { - TAPE BEGIN found }
+                   if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
+                     then stat_mandatory := stat_mandatory or $10;
+                   { - TAPE END found }
+                   if s[5] + s[6] + s[7] = LEND
+                     then stat_mandatory := stat_mandatory or $20;
+                 end;    
+              3: { COMM found}
+                 begin
+                   { - COMM BEGIN found }
+                   if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
+                     then stat_mandatory := stat_mandatory or $40;
+                   { - COMM END found }
+                   if s[5] + s[6] + s[7] = LEND
+                     then stat_mandatory := stat_mandatory or $80;
+                 end;    
+            end;            
+          end;
         end;
-        until (eof(t36file)) or (line = 99);
+      until (eof(t36file)) or (line = 255);
         close(t36file);
     end;
   end;
@@ -176,24 +214,25 @@ error:
 end;
 
 { Töröld, ha már nem kell!
-PROG NUMSWAP
-DESC Swapping numbers back and forth                                           
-SYMB 0123456789
-STAT 3
+PROGBEGIN
+NAMENUMSWAP
+DESCSwapping numbers back and forth                                           
+SYMB0123456789
+STAT3
 
-CARD BEGIN
-ST01 01R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
-ST02 09L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __S00
-CARD END
+CARDBEGIN
+ST0101R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
+ST0209L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __S00
+CARDEND
 
-TAPE BEGIN
-DATA 0123456789
-SPOS 1
-TAPE END
-COMM BEGIN
+TAPEBEGIN
+DATA0123456789
+SPOS1
+TAPEEND
+COMMBEGIN
 
-COMM END
-PROG END
+COMMEND
+PROGEND
 }
 
 { COMMAND 'prog' }

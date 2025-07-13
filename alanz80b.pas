@@ -156,13 +156,6 @@ begin
   writeln;
   { initialize program memory, program tape, program status and breakpoint }
   cmd_reset;
-
-  // Ne felejtsd törölni!
-  insert('abcdefg_hijklmno', machine.tape, 100);
-  machine.progname := 'EXAMPLE';
-  machine.progdesc := 'Ez egy példaprogam';
-  // Ne felejtsd törölni!
-  
   trace := false;
   writeln(HINT);
   { main operation }

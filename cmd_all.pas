@@ -87,21 +87,21 @@ end;
 { COMMAND 'load' }
 procedure cmd_load(p1: TSplitted);
 var
-  b, l:           byte;
+  b:              byte;
+  ec:             integer;
+  lab, seg:       byte;
+  line:           byte;
+  s, ss:          string[255];
   stat_mandatory: byte;                      { status byte of mandatory labels }
   stat_segment:   byte;                      { status byte of program segments }
   t36file:        text;
-  s:              string[255];
-  line:           byte;
 
   // Töröld, ha nem kell!
-  address, data:  byte;
   i1, i2:         integer;
   e:              byte;
-  ec:             integer;
 const
   LSEGMENTS:      array[0..3] of string[4] = ('PROG', 'CARD', 'TAPE', 'COMM');
-  LLABELS:        array[0..4] of string[4] = ('NAME', 'DESC', 'STAT', 'SYMB',
+  LLABELS:        array[0..4] of string[4] = ('NAME', 'DESC', 'SYMB', 'STAT',
                   'SPOS');
   LBEGIN =        'BEGIN';
   LEND =          'END';
@@ -147,55 +147,125 @@ begin
         { - convert to uppercase and truncate to 40 }
         for b := 1 to length(s) do s[b] := upcase(s[b]);
         { - check comment sign }
-        if s[1] <> COMMENT then
+        if (s[1] <> COMMENT) and (length(s) > 0) then
         begin
           { search segment }
-          l := 255;
+          seg := 255;
           for b := 0 to 3 do
-            if s[1] + s[2] + s[3] + s[4] = LSEGMENTS[b] then l := b;
-          if l < 255 then
+            if s[1] + s[2] + s[3] + s[4] = LSEGMENTS[b] then seg := b;
+          { - remove space and tabulator after label }
+          while (s[5] = #32) or (s[5] = #9) do delete(s, 5, 1);
+          if seg < 255 then
           begin
             { - segment is valid }
-            { - remove space and tabulator after label }
-            while (s[1] = #32) or (s[5] = #9) do delete(s, 5, 1);
-            case l of
+            case seg of
               0: { PROG found}
                  begin
                    { - PROG BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
-                     then stat_mandatory := stat_mandatory or $01;
+                     then stat_segment := stat_segment or $01;
                    { - PROG END found }
                    if s[5] + s[6] + s[7] = LEND
-                     then stat_mandatory := stat_mandatory or $02;
+                     then stat_segment := stat_segment or $02;
                  end; 
               1: { CARD found}
                  begin
                    { - CARD BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
-                     then stat_mandatory := stat_mandatory or $04;
+                     then stat_segment := stat_segment or $04;
                    { - CARD END found }
                    if s[5] + s[6] + s[7] = LEND
-                     then stat_mandatory := stat_mandatory or $08;
+                     then stat_segment := stat_segment or $08;
                  end;    
               2: { TAPE found}
                  begin
                    { - TAPE BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
-                     then stat_mandatory := stat_mandatory or $10;
+                     then stat_segment := stat_segment or $10;
                    { - TAPE END found }
                    if s[5] + s[6] + s[7] = LEND
-                     then stat_mandatory := stat_mandatory or $20;
+                     then stat_segment := stat_segment or $20;
                  end;    
               3: { COMM found}
                  begin
                    { - COMM BEGIN found }
                    if s[5] + s[6] + s[7] + s[8] + s[9] = LBEGIN
-                     then stat_mandatory := stat_mandatory or $40;
+                     then stat_segment := stat_segment or $40;
                    { - COMM END found }
                    if s[5] + s[6] + s[7] = LEND
-                     then stat_mandatory := stat_mandatory or $80;
+                     then stat_segment := stat_segment or $80;
                  end;    
             end;            
+          end;
+          { search label }
+          lab := 255;
+          for b := 0 to 4 do
+            if s[1] + s[2] + s[3] + s[4] = LLABELS[b] then lab := b;
+          if lab < 255 then
+          begin
+            { - label is valid }
+            case lab of
+              0: { NAME found}
+                 if stat_segment = $01 then
+                 begin
+                   { - in the opened segment PROG }
+                   stat_mandatory := stat_mandatory or $01;
+                   for b := 5 to length(s) do
+                       machine.progname := machine.progname + s[b];
+                 end;
+              1: { DESC found}
+                 if stat_segment = $01 then
+                 begin
+                   { - in the opened segment PROG }
+                   stat_mandatory := stat_mandatory or $02;
+                   for b := 5 to length(s) do
+                     machine.progdesc := machine.progdesc + s[b];
+                 end;
+              2: { SYMB found}
+                 if stat_segment = $01 then
+                 begin
+                   { - in the opened segment PROG }
+                   stat_mandatory := stat_mandatory or $04;
+                   for b := 5 to length(s) do
+                    machine.symbols := machine.symbols + s[b];
+                 end else
+                 begin
+                   { - in the opened segment TAPE }
+                   ss := '';
+                   for b := 5 to length(s) do
+                     ss := ss + s[b];
+                   insert(ss, machine.tape, 100);
+                 end;
+              3: { STAT found}
+                 if stat_segment = $01 then
+                 begin
+                   { - in the opened segment PROG }
+                   stat_mandatory := stat_mandatory or $08;
+                   ss := '';
+                   for b := 5 to length(s) do
+                     ss := ss + s[b];
+                   val(ss, machine.states, ec);
+
+                   // Érték és hiba kiértékelés ide!
+
+                 end;
+              4: { SPOS found}
+                 if stat_segment = $11 then
+                 begin
+                   { - in the opened segment PROG }
+                   ss := '';
+                   for b := 5 to length(s) do
+                     ss := ss + s[b];
+                   val(ss, machine.tapepos, ec);
+
+                   // Érték és hiba kiértékelés ide!
+
+                 end;
+            end;
+
+            // Program betöltés ide!
+            // ST0101R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
+
           end;
         end;
       until (eof(t36file)) or (line = 255);
@@ -203,6 +273,9 @@ begin
     end;
   end;
 error:  
+
+// Egyéb hibák kiértékelése ide! (lezáratlan szegmensek, stb.)
+
 {  case e of
      2: writeln(MESSAGE[21] + p1 + '.');
      3: writeln(MESSAGE[24], line);
@@ -212,28 +285,6 @@ error:
     writeln(MESSAGE[23] + p1 + '.');
   end;}
 end;
-
-{ Töröld, ha már nem kell!
-PROGBEGIN
-NAMENUMSWAP
-DESCSwapping numbers back and forth                                           
-SYMB0123456789
-STAT3
-
-CARDBEGIN
-ST0101R01 12R01 23R01 34R01 45R01 56R01 67R01 78R01 89R01 90R01 __S02
-ST0209L02 10L02 21L02 32L02 43L02 54L02 65L02 76L02 87L02 98L02 __S00
-CARDEND
-
-TAPEBEGIN
-DATA0123456789
-SPOS1
-TAPEEND
-COMMBEGIN
-
-COMMEND
-PROGEND
-}
 
 { COMMAND 'prog' }
 procedure cmd_prog;

@@ -40,17 +40,13 @@ begin
       val(p1, ip1, ec);
       if ec = 0
       then
-        if (ip1 >= 0) and (ip1 <= 99) then e := 0 else e := 11
-      else e := 12;
-      { error messages }
-      case e of
-        11: writeln(MESSAGE[16]);
-        12: writeln(MESSAGE[17]);
-      else
-        begin
-          qb := ip1;
-          writeln(MESSAGE[12], addzero(qb), '.');
-        end;
+        if (ip1 >= 0) and (ip1 <= 99) then e := 0 else e := 7
+      else e := 8;
+      { - error messages or primary operation }
+      if e > 0 then writeln(MESSAGE[e]) else
+      begin
+        qb := ip1;
+        writeln(MESSAGE[12], addzero(qb), '.');
       end;
     end;
   end;
@@ -88,17 +84,15 @@ end;
 procedure cmd_load(p1: TSplitted);
 var
   b:              byte;
-  ec:          integer;
+  e:              byte;
+  ec, i:          integer;
   lab, seg:       byte;
   line:           byte;
+  qi:             byte;
   s, ss:          string[255];
   stat_mandatory: byte;                      { status byte of mandatory labels }
   stat_segment:   byte;                      { status byte of program segments }
   t36file:        text;
-
-  // Töröld, ha nem kell!
-  e:              byte;
-
 const
   LSEGMENTS:      array[0..3] of string[4] = ('PROG', 'CARD', 'TAPE', 'COMM');
   LLABELS:        array[0..4] of string[4] = ('NAME', 'DESC', 'SYMB', 'STAT',
@@ -126,13 +120,13 @@ begin
   stat_mandatory := 0;
   stat_segment := 0;
   { check parameters }
-  if length(p1) = 0 then e := 12 else
+  if length(p1) = 0 then e := 7 else
   begin
     assign(t36file, p1);
     {$I-}
       reset(t36file);
     {$I+}
-    if ioresult <> 0 then e := 2 else
+    if ioresult <> 0 then e := 21 else
     begin
       cmd_reset;
       { read text file content }
@@ -244,10 +238,13 @@ begin
                    ss := '';
                    for b := 5 to length(s) do
                      ss := ss + s[b];
-                   val(ss, machine.states, ec);
-
-                   // Érték és hiba kiértékelés ide!
-
+                   val(ss, i, ec);
+                   { - minimum value is two: q00 and q01 }
+                   if i < 2 then machine.states := 2;
+                   { - error messages }
+                   if ec > 0 then e := 1;
+                   if i > 99 then e := 2;
+                   if e > 0 then goto error else machine.states := i;
                  end;
               4: { SPOS found }
                  if stat_segment = $11 then
@@ -256,28 +253,42 @@ begin
                    ss := '';
                    for b := 5 to length(s) do
                      ss := ss + s[b];
-                   val(ss, machine.tapepos, ec);
-
-                   // Érték és hiba kiértékelés ide!
-
+                   val(ss, i, ec);
+                   { - error messages }
+                   if ec > 0 then e := 3;
+                   if (i < 50) or (i > 200) then e := 4;
+                   if e > 0 then goto error else machine.tapepos := i;
                  end;
             end;
           end;
           if (s[1] + s[2] = 'ST') and (stat_segment = $05) then
           begin
-            { SPOS found in the opened segment PROG and CARD }
+            { STnn found in the opened segment PROG and CARD }
             { - remove all spaces and tabulators }
             ss := '';
             for b := 1 to length(s) do
               if (s[b] <> #32) and (s[b] <> #9) then ss := ss + s[b];
+            { - qi }
+            val(ss, qi, ec);
+
+            // Érték és hiba kiértékelés ide!
 
             { Töröld, ha már nem kell! }
-            writeln('qi: ', s[3] + s[4]);
+            writeln('qi: ', ss[3] + ss[4]);
 
             delete(ss, 1, 4);
             b := 0;
             while (length(ss) >= (b * 5 + 5)) and (b < 51) do
             begin
+              machine.rules[qi, b].sj := ss[b * 5 + 1];
+              machine.rules[qi, b].sk := ss[b * 5 + 2];
+
+              //machine.rules[qi, b].D := ss[b * 5 + 3];
+              // machine.rules[qi, b].qm := ss[b * 5 + 4];
+
+
+
+
 
               { Töröld, ha már nem kell! }
               writeln('sj: ', ss[b * 5 + 1]);
@@ -286,26 +297,43 @@ begin
               writeln('qm: ', ss[b * 5 + 4] + ss[b * 5 + 5]);
               writeln;
               b := b + 1;
+//    rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
 
             end;
           end;
         end;
       until (eof(t36file)) or (line = 255);
+    error:  
       close(t36file);
+      { error messages }
+      { - missing mandatory tags }
+      if (stat_segment and $01) <> $01 then e := 39;
+      if (stat_segment and $02) <> $02 then e := 40;
+      if (stat_segment and $04) <> $04 then e := 41;
+      if (stat_segment and $08) <> $08 then e := 42;
+      if (stat_mandatory and $01) <> $01 then e := 45;
+      if (stat_mandatory and $02) <> $02 then e := 46;
+      if (stat_mandatory and $04) <> $04 then e := 47;
+      if (stat_mandatory and $08) <> $08 then e := 48;
+      { - missing optional END tags }
+      if (stat_segment and $10) = $10 then
+        if (stat_segment and $20) <> $20 then e := 43;
+      if (stat_segment and $40) = $40 then
+        if (stat_segment and $80) <> $80 then e := 44;
+      if e > 0 then
+      begin
+        writeln(MESSAGE[e]);
+        cmd_reset;
+      end;
     end;
   end;
-error:  
-
-// Egyéb hibák kiértékelése ide! (lezáratlan szegmensek, stb.)
-
-{  case e of
-     2: writeln(MESSAGE[21] + p1 + '.');
-     3: writeln(MESSAGE[24], line);
-     4: writeln(MESSAGE[25], line);
-    12: writeln(MESSAGE[7]);
+  { error messages }
+  case e of
+     7: writeln(MESSAGE[e]);
+    21: writeln(MESSAGE[e] + p1 + '.');
   else
-    writeln(MESSAGE[23] + p1 + '.');
-  end;}
+    writeln(MESSAGE[5]);
+  end;
 end;
 
 { COMMAND 'prog' }
@@ -327,7 +355,7 @@ begin
     for b := 0 to 99 do
       for bb := 0 to 39 do
       begin
-        rules[b, bb].D := 2;
+        rules[b, bb].D := 'R';
         rules[b, bb].qm := 1; 
         rules[b, bb].Sj := ''; 
         rules[b, bb].Sk := '';
@@ -363,16 +391,13 @@ begin
     val(p1, ip1, ec);
     if ec = 0
     then
-      if (ip1 >= 2) and (ip1 <= 99) then e := 0 else e := 11
-    else e := 12;
-    case e of
-      11: writeln(MESSAGE[8]);
-      12: writeln(MESSAGE[7]);
-    else
-      begin
-        machine.states := ip1;
-        writeln(MESSAGE[14], machine.states, '.');
-      end;
+      if (ip1 >= 2) and (ip1 <= 99) then e := 0 else e := 8
+    else e := 7;
+    { error message or primary operation }
+    if e > 0 then writeln(MESSAGE[e]) else
+    begin
+      machine.states := ip1;
+      writeln(MESSAGE[14], machine.states, '.');
     end;
   end;
 end;
@@ -483,9 +508,8 @@ begin
   if length(p1) = 0 then trace := not trace else
     if upcase(p1) = 'ON' then trace := true else
       if upcase(p1) = 'OFF' then trace := false else
-      e := 11;
-  if e = 11
-    then writeln(MESSAGE[8])
-    else
-      if trace then writeln(MESSAGE[30]) else writeln(MESSAGE[31]);
+      e := 8;
+  { error message or primary operation }
+  if e > 0 then writeln(MESSAGE[e]) else
+    if trace then writeln(MESSAGE[30]) else writeln(MESSAGE[31]);
 end;

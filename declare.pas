@@ -14,7 +14,7 @@
 
 type
   T4tuple =     record                                            { tuple type }
-    D:          byte;                                { head movement direction }
+    D:          string[1];                           { head movement direction }
     qm:         byte;                                            { final state }
     Sj:         string[1];                                       { read symbol }
     Sk:         string[1];                              { symbol to be written }
@@ -26,8 +26,8 @@ type
     rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
     states:     byte;                                       { number of states }
     symbols:    string[40];                                     { symbolum set }
-    tapepos:    byte;                                          { head position }
-    tape:       string[200];                                            { tape }
+    tapepos:    byte;                                 { relative head position }
+    tape:       string[255];                                            { tape }
   end;
   TCommand =    string[255];                   { different length string types }
   TFilename =   string[12];
@@ -85,14 +85,15 @@ const
                 'symbol [symbols|-]       ',
                 'tape [content|-]         ',
                 'trace [on|off]           '));
-  MESSAGE:      array[0..31] of string[51] = (
-                'No such command!', //*
+  MESSAGE:      array[0..48] of string[61] = (
+
+                'No such command!',
+                'The STAT value is bad or missing.',
+                'The STAT value is out of range.',
+                'The SPOS value is bad.',
+                'The SPOS value is out of range.',
+                'The program file was successfully loaded.',
                 '',
-                '',   
-                '',   
-                '',   
-                '',   
-                '',   
                 'Command parameter is bad or missing.',
                 'Command parameter value is incorrect.',
                 'No breakpoint state set.',
@@ -117,4 +118,21 @@ const
                 'Run program from head position ',
                 'Step-by-step execution head position ',
                 'Trace on.',
-                'Trace off.');
+                'Trace off.',
+                'The initial state (qi) is bad or missing.',
+                'The initial state value (qi) is not included in the set Q.',
+                'The head moving direction value is not included in the set D.',
+                'The final state (qm) is bad or missing.',
+                'The final state value (qm) is not included in the set Q.',
+                'The read symbol (sj) is not in the set S.',
+                'The symbol to be written (sk) is not in the set S.',
+                'Missing mandatory PROG BEGIN tag.',
+                'Missing mandatory PROG END tag.',
+                'Missing mandatory CARD BEGIN tag.',
+                'Missing mandatory CARD END tag.',
+                'Missing optional TAPE END tag.',
+                'Missing optional COMM END tag.',
+                'Missing mandatory CARD tag.',
+                'Missing mandatory NAME tag.',
+                'Missing mandatory STAT tag.',
+                'Missing mandatory SYMB tag.');

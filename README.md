@@ -40,7 +40,7 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |OS                      |CP/M and DOS (and others, see comments in the source.|
 |symbol set              |up to 40 characters                                  |
 |state set               |up to 100 states                                     |
-|virtual tape length     |200 cell                                             |
+|virtual tape length     |255 cell                                             |
 |tape input data length  |50 cell                                              |
 |example program         |4 scripts                                            |
 |load from file          |from standard input                                  |
@@ -127,6 +127,9 @@ S = {s00..s39}, where the
 The set has cardinality at least one, and its first element is always the blank
 symbol. If the first symbol specified in the CONF section is not blank, then it
 will be inserted.
+
+
+!!!! ide jön a fejmozgás !!!!
 
 #### Operation
 

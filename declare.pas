@@ -85,7 +85,18 @@ const
                 'symbol [symbols|-]       ',
                 'tape [content|-]         ',
                 'trace [on|off]           '));
-  MESSAGE:      array[0..53] of string[61] = (
+  MESSAGE:      array[0..50] of string[61] = (
+
+
+
+
+
+
+
+
+
+
+
                 'No such command!',
                 'The STAT value is bad or missing.',
                 'The STAT value is out of range.',
@@ -99,9 +110,9 @@ const
                 'The breakpoint state is ',
                 'The breakpoint state is deleted.',
                 'The breakpoint state is set to ',
-                'The number of states is ',
+                'Number of states: ',
                 'The number of states is set to ',
-                'The tape symbols are ''',
+                'Set of symbols:   ',
                 'The tape symbols are deleted.',
                 'The tape symbols are set to ''',
                 'Duplicate symbols have been deleted!',
@@ -110,7 +121,7 @@ const
                 'Cannot read ',
                 'Program name:     ',
                 'The tape is empty.',
-                'The tape content is ''',
+                'Tape content:     ',
                 'The tape content is deleted.',
                 'The Turing machine has been reset.',
                 'The tape data is too long and has been truncated!',
@@ -135,8 +146,5 @@ const
                 'Missing mandatory NAME tag.',
                 'Missing mandatory STAT tag.',
                 'Missing mandatory SYMB tag.',
-                'Number of states: ',
-                'Set of symbols:   ',
-                'Tape content:     ',
                 'Head position:    ',
                 'Program:');

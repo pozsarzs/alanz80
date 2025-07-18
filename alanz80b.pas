@@ -21,6 +21,8 @@ uses crt;
 procedure cmd_prog; forward;
 procedure cmd_reset(v: boolean); forward;
 procedure cmd_tape(p1: TSplitted); forward;
+procedure cmd_state(p1: TSplitted); forward;
+procedure cmd_symbol(p1: TSplitted); forward;
 
 { WAIT FOR A KEY }
 procedure waitforkey;

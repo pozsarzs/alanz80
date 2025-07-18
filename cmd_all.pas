@@ -70,8 +70,6 @@ end;
 
 { COMMAND 'info' }
 procedure cmd_info;
-var
-  qi, r: byte;
 begin
   if length(machine.progname) = 0 then writeln(MESSAGE[20]) else
   begin
@@ -80,30 +78,13 @@ begin
     { - short description }
     writeln(MESSAGE[6] + machine.progdesc);
     { - number of states }
-    writeln(MESSAGE[49], machine.states);
+    cmd_state('');
     { - set of symbol}
-    writeln(MESSAGE[50] + machine.symbols);
-    { - initial tape content }
-    write(MESSAGE[51]);
-    for b := 1 to length(machine.tape) do
-      if machine.tape[b] <> SPACE then write(machine.tape[b]);
-    writeln;
-    { - (relative) head start position }
-    writeln(MESSAGE[52], machine.tapepos);
+    cmd_symbol('');
+    { - initial tape content and (relative) head start position }
+    cmd_tape('');
     { - program list }
-    writeln(MESSAGE[53]);
-    for qi := 1 to 99 do
-    begin
-      for r := 0 to 39 do
-        if machine.rules[qi, r].sj <> ''
-        then
-          write(addzero(qi),
-                  machine.rules[qi, r].sj,
-                  machine.rules[qi, r].sk,
-                  machine.rules[qi, r].d,
-                  addzero(machine.rules[qi, r].qm), ' ');
-      if machine.rules[qi, 0].sj <> '' then writeln;
-    end;
+    cmd_prog;
   end;
 end;
 
@@ -126,6 +107,8 @@ const
                   'SPOS');
   LBEGIN =        'BEGIN';
   LEND =          'END';
+label
+  error;
 
 { 
     bit   stat_segment          stat_mandatory (in PROG)
@@ -139,9 +122,14 @@ const
     D6    'COMM BEGIN' found
     D7    'COMM END' found
 }
- 
-label
-  error;
+
+{ SET ERROR CODE AND WRITE ERROR MESSAGE }
+procedure errmsg(b: byte);
+begin
+  e := b;
+  writeln(MESSAGE[b]);
+end;
+
 begin
   e := 0;
   stat_mandatory := 0;
@@ -297,9 +285,10 @@ begin
               if (s[b] <> #32) and (s[b] <> #9) then ss := ss + s[b];
             { - qi }
             val(ss[3] + ss[4], qi, ec);
-
-            // !!! Érték és hiba kiértékelés ide !!!
-
+            { - check value }
+            if ec > 0 then e := 32;
+            if (qi < 0) or (qi > 99) then e := 33;
+            if e > 0 then goto error;
             delete(ss, 1, 4);
             b := 0;
             while (length(ss) >= (b * 5 + 5)) and (b < 51) do
@@ -314,31 +303,32 @@ begin
 
               b := b + 1;
             end;
-            writeln;
           end;
         end;
       until (eof(t36file)) or (line = 255);
     error:  
       close(t36file);
       { error messages }
+      { - bad or missing values }
+      if e > 0 then writeln(MESSAGE[e]);
       { - missing mandatory tags }
-      if (stat_segment and $01) <> $01 then writeln(MESSAGE[39]);
-      if (stat_segment and $02) <> $02 then writeln(MESSAGE[40]);
-      if (stat_segment and $04) <> $04 then writeln(MESSAGE[41]);
-      if (stat_segment and $08) <> $08 then writeln(MESSAGE[42]);
-      if (stat_mandatory and $01) <> $01 then writeln(MESSAGE[45]);
-      if (stat_mandatory and $02) <> $02 then writeln(MESSAGE[46]);
-      if (stat_mandatory and $04) <> $04 then writeln(MESSAGE[47]);
-      if (stat_mandatory and $08) <> $08 then writeln(MESSAGE[48]);
+      if (stat_segment and $01) <> $01 then errmsg(39);
+      if (stat_segment and $02) <> $02 then errmsg(40);
+      if (stat_segment and $04) <> $04 then errmsg(41);
+      if (stat_segment and $08) <> $08 then errmsg(42);
+      if (stat_mandatory and $01) <> $01 then errmsg(45);
+      if (stat_mandatory and $02) <> $02 then errmsg(46);
+      if (stat_mandatory and $04) <> $04 then errmsg(47);
+      if (stat_mandatory and $08) <> $08 then errmsg(48);
       { - missing optional END tags }
       if (stat_segment and $10) = $10 then
-        if (stat_segment and $20) <> $20 then writeln(MESSAGE[43]);
+        if (stat_segment and $20) <> $20 then errmsg(43);
       if (stat_segment and $40) = $40 then
-        if (stat_segment and $80) <> $80 then writeln(MESSAGE[44]);
+        if (stat_segment and $80) <> $80 then errmsg(44);
       if e > 0 then cmd_reset(false);
     end;
   end;
-  { error messages }
+  { - file open errors }
   case e of
      7: writeln(MESSAGE[e]);
     21: writeln(MESSAGE[e] + p1 + '.');
@@ -349,7 +339,19 @@ end;
 
 { COMMAND 'prog' }
 procedure cmd_prog;
+var
+ qi, r: byte;
 begin
+  writeln(MESSAGE[50]);
+  for qi := 1 to 99 do
+  begin
+    for r := 0 to 39 do
+      if machine.rules[qi, r].sj <> ''
+      then
+        write(addzero(qi), machine.rules[qi, r].sj, machine.rules[qi, r].sk,
+              machine.rules[qi, r].d, addzero(machine.rules[qi, r].qm), ' ');
+      if machine.rules[qi, 0].sj <> '' then writeln;
+  end;
 end;
 
 { COMMAND 'reset' }
@@ -395,7 +397,7 @@ begin
   if length(p1) = 0 then
   begin
     { get number of states }
-    writeln(MESSAGE[13], machine.states, '.');
+    writeln(MESSAGE[13], machine.states);
   end else
   begin
     { set number of states }
@@ -428,7 +430,7 @@ begin
   if length(p1) = 0 then
   begin
     { get symbol list }
-    writeln(MESSAGE[15], machine.symbols, '''.');
+    writeln(MESSAGE[15] + machine.symbols);
   end else
   begin
     if p1 = '-' then
@@ -482,12 +484,11 @@ begin
     { get symbol list }
     if tapeisempty then writeln(MESSAGE[23]) else
     begin
-      s := machine.tape;
-      { - remove _ from start of line }
-      while s[1] = SPACE do delete(s, 1, 1);
-      { - remove _ from end of line }
-      while s[length(s)] = SPACE do delete(s, length(s), 1);
-      writeln(MESSAGE[24], s, '''.');
+      write(MESSAGE[24]);
+      for b := 1 to length(machine.tape) do
+        if machine.tape[b] <> SPACE then write(machine.tape[b]);
+      writeln;
+      writeln(MESSAGE[49], machine.tapepos);
     end;
   end else
   begin

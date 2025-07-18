@@ -70,13 +70,40 @@ end;
 
 { COMMAND 'info' }
 procedure cmd_info;
+var
+  qi, r: byte;
 begin
   if length(machine.progname) = 0 then writeln(MESSAGE[20]) else
   begin
-    writeln(MESSAGE[22] + machine.progname + '''');
-    writeln(machine.progdesc);
-    cmd_tape('');
-    cmd_prog;
+    { - name }
+    writeln(MESSAGE[22] + machine.progname);
+    { - short description }
+    writeln(MESSAGE[6] + machine.progdesc);
+    { - number of states }
+    writeln(MESSAGE[49], machine.states);
+    { - set of symbol}
+    writeln(MESSAGE[50] + machine.symbols);
+    { - initial tape content }
+    write(MESSAGE[51]);
+    for b := 1 to length(machine.tape) do
+      if machine.tape[b] <> SPACE then write(machine.tape[b]);
+    writeln;
+    { - (relative) head start position }
+    writeln(MESSAGE[52], machine.tapepos);
+    { - program list }
+    writeln(MESSAGE[53]);
+    for qi := 1 to 99 do
+    begin
+      for r := 0 to 39 do
+        if machine.rules[qi, r].sj <> ''
+        then
+          write(addzero(qi),
+                  machine.rules[qi, r].sj,
+                  machine.rules[qi, r].sk,
+                  machine.rules[qi, r].d,
+                  addzero(machine.rules[qi, r].qm), ' ');
+      if machine.rules[qi, 0].sj <> '' then writeln;
+    end;
   end;
 end;
 
@@ -128,7 +155,7 @@ begin
     {$I+}
     if ioresult <> 0 then e := 21 else
     begin
-      cmd_reset;
+      cmd_reset(false);
       { read text file content }
       line := 0;
       repeat
@@ -269,37 +296,25 @@ begin
             for b := 1 to length(s) do
               if (s[b] <> #32) and (s[b] <> #9) then ss := ss + s[b];
             { - qi }
-            val(ss, qi, ec);
+            val(ss[3] + ss[4], qi, ec);
 
-            // Érték és hiba kiértékelés ide!
-
-            { Töröld, ha már nem kell! }
-            writeln('qi: ', ss[3] + ss[4]);
+            // !!! Érték és hiba kiértékelés ide !!!
 
             delete(ss, 1, 4);
             b := 0;
             while (length(ss) >= (b * 5 + 5)) and (b < 51) do
             begin
+              { - and others }
               machine.rules[qi, b].sj := ss[b * 5 + 1];
               machine.rules[qi, b].sk := ss[b * 5 + 2];
+              machine.rules[qi, b].D := ss[b * 5 + 3];
+              // machine.rules[qi, b].qm := ss[b * 5 + 4] + ss[b * 5 + 5];
 
-              //machine.rules[qi, b].D := ss[b * 5 + 3];
-              // machine.rules[qi, b].qm := ss[b * 5 + 4];
+              // !!! Érték és hiba kiértékelés ide !!!
 
-
-
-
-
-              { Töröld, ha már nem kell! }
-              writeln('sj: ', ss[b * 5 + 1]);
-              writeln('sk: ', ss[b * 5 + 2]);
-              writeln('d:  ', ss[b * 5 + 3]);
-              writeln('qm: ', ss[b * 5 + 4] + ss[b * 5 + 5]);
-              writeln;
               b := b + 1;
-//    rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
-
             end;
+            writeln;
           end;
         end;
       until (eof(t36file)) or (line = 255);
@@ -307,24 +322,20 @@ begin
       close(t36file);
       { error messages }
       { - missing mandatory tags }
-      if (stat_segment and $01) <> $01 then e := 39;
-      if (stat_segment and $02) <> $02 then e := 40;
-      if (stat_segment and $04) <> $04 then e := 41;
-      if (stat_segment and $08) <> $08 then e := 42;
-      if (stat_mandatory and $01) <> $01 then e := 45;
-      if (stat_mandatory and $02) <> $02 then e := 46;
-      if (stat_mandatory and $04) <> $04 then e := 47;
-      if (stat_mandatory and $08) <> $08 then e := 48;
+      if (stat_segment and $01) <> $01 then writeln(MESSAGE[39]);
+      if (stat_segment and $02) <> $02 then writeln(MESSAGE[40]);
+      if (stat_segment and $04) <> $04 then writeln(MESSAGE[41]);
+      if (stat_segment and $08) <> $08 then writeln(MESSAGE[42]);
+      if (stat_mandatory and $01) <> $01 then writeln(MESSAGE[45]);
+      if (stat_mandatory and $02) <> $02 then writeln(MESSAGE[46]);
+      if (stat_mandatory and $04) <> $04 then writeln(MESSAGE[47]);
+      if (stat_mandatory and $08) <> $08 then writeln(MESSAGE[48]);
       { - missing optional END tags }
       if (stat_segment and $10) = $10 then
-        if (stat_segment and $20) <> $20 then e := 43;
+        if (stat_segment and $20) <> $20 then writeln(MESSAGE[43]);
       if (stat_segment and $40) = $40 then
-        if (stat_segment and $80) <> $80 then e := 44;
-      if e > 0 then
-      begin
-        writeln(MESSAGE[e]);
-        cmd_reset;
-      end;
+        if (stat_segment and $80) <> $80 then writeln(MESSAGE[44]);
+      if e > 0 then cmd_reset(false);
     end;
   end;
   { error messages }
@@ -342,7 +353,7 @@ begin
 end;
 
 { COMMAND 'reset' }
-procedure cmd_reset;
+procedure cmd_reset(v: boolean);
 var
   b, bb: byte;
 begin
@@ -369,7 +380,7 @@ begin
   qb := 255;
   prg_counter := 0;
   prg_status := 0;
-  writeln(MESSAGE[26]);
+  if v then writeln(MESSAGE[26]);
 end;
 
 { COMMAND 'state' }
@@ -492,7 +503,7 @@ begin
       for b := 1 to length(p1) do s := upcase(p1);
       { - warning messages }
       if length(p1) > 50 then writeln(MESSAGE[27]);
-      insert(s, machine.tape, 100);
+      insert(s, machine.tape, 50);
       writeln(MESSAGE[24], s, '''.');
     end;
   end;  

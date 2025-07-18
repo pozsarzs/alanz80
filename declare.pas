@@ -14,10 +14,10 @@
 
 type
   T4tuple =     record                                            { tuple type }
-    D:          string[1];                           { head movement direction }
+    d:          string[1];                           { head movement direction }
     qm:         byte;                                            { final state }
-    Sj:         string[1];                                       { read symbol }
-    Sk:         string[1];                              { symbol to be written }
+    sj:         string[1];                                       { read symbol }
+    sk:         string[1];                              { symbol to be written }
   end;
   TTuring =     record                                    { Turing machine type}
     progdesc:   string[64];                           { description of program }
@@ -85,15 +85,14 @@ const
                 'symbol [symbols|-]       ',
                 'tape [content|-]         ',
                 'trace [on|off]           '));
-  MESSAGE:      array[0..48] of string[61] = (
-
+  MESSAGE:      array[0..53] of string[61] = (
                 'No such command!',
                 'The STAT value is bad or missing.',
                 'The STAT value is out of range.',
                 'The SPOS value is bad.',
                 'The SPOS value is out of range.',
                 'The program file was successfully loaded.',
-                '',
+                'Description:      ',
                 'Command parameter is bad or missing.',
                 'Command parameter value is incorrect.',
                 'No breakpoint state set.',
@@ -109,7 +108,7 @@ const
                 'The symbol list is too long and has been truncated!',
                 'No loaded program!',
                 'Cannot read ',
-                'Program ''',
+                'Program name:     ',
                 'The tape is empty.',
                 'The tape content is ''',
                 'The tape content is deleted.',
@@ -135,4 +134,9 @@ const
                 'Missing mandatory CARD tag.',
                 'Missing mandatory NAME tag.',
                 'Missing mandatory STAT tag.',
-                'Missing mandatory SYMB tag.');
+                'Missing mandatory SYMB tag.',
+                'Number of states: ',
+                'Set of symbols:   ',
+                'Tape content:     ',
+                'Head position:    ',
+                'Program:');

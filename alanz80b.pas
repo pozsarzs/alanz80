@@ -19,7 +19,7 @@ uses crt;
 {$I declare.pas }
 
 procedure cmd_prog; forward;
-procedure cmd_reset; forward;
+procedure cmd_reset(v: boolean); forward;
 procedure cmd_tape(p1: TSplitted); forward;
 
 { WAIT FOR A KEY }
@@ -134,7 +134,7 @@ begin
            3: cmd_load(splitted[1]);
            4: cmd_prog;
            5: parsingcommand := true;
-           6: cmd_reset;
+           6: cmd_reset(true);
            7: cmd_run(false, splitted[1]);
            8: cmd_state(splitted[1]);
            9: cmd_run(true, splitted[1]);
@@ -155,7 +155,7 @@ begin
   for b := 1 to length(HEADER2) do write('-');
   writeln;
   { initialize program memory, program tape, program status and breakpoint }
-  cmd_reset;
+  cmd_reset(false);
   trace := false;
   writeln(HINT);
   { main operation }

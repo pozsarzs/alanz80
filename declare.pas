@@ -47,6 +47,7 @@ const
   COMMARRSIZE = 12;
   COMMENT =     #59;
   SPACE =       #95;
+  HMD =         'LSR';                                { head moving directions }
   { UNCOMMENT CORRESPONDING LINES: }
   HEADER1 =     'AlanZ80 v0.1 for CP/M';
   { HEADER1 =     'AlanZ80 v0.1 for DOS'; }
@@ -86,7 +87,6 @@ const
                 'tape [content|-]         ',
                 'trace [on|off]           '));
   MESSAGE:      array[0..50] of string[61] = (
-
 
 
 

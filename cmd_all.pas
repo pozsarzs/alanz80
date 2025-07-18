@@ -91,8 +91,8 @@ end;
 { COMMAND 'load' }
 procedure cmd_load(p1: TSplitted);
 var
-  b:              byte;
-  e:              byte;
+  b, bb:          byte;
+  e:              byte;                                           { error code }
   ec, i:          integer;
   lab, seg:       byte;
   line:           byte;
@@ -283,7 +283,7 @@ begin
             ss := '';
             for b := 1 to length(s) do
               if (s[b] <> #32) and (s[b] <> #9) then ss := ss + s[b];
-            { - qi }
+            { qi }
             val(ss[3] + ss[4], qi, ec);
             { - check value }
             if ec > 0 then e := 32;
@@ -293,14 +293,37 @@ begin
             b := 0;
             while (length(ss) >= (b * 5 + 5)) and (b < 51) do
             begin
-              { - and others }
+              { sj }
               machine.rules[qi, b].sj := ss[b * 5 + 1];
+              { - check value }
+              ec := 1;
+              for bb := 1 to length(machine.symbols) do
+                if machine.rules[qi, b].sj = machine.symbols[bb] then ec := 0;
+              if ec > 0 then e := 37;
+              if e > 0 then goto error;
+              { sk }
               machine.rules[qi, b].sk := ss[b * 5 + 2];
+              { - check value }
+              ec := 1;
+              for bb := 1 to length(machine.symbols) do
+                if machine.rules[qi, b].sk = machine.symbols[bb] then ec := 0;
+              if ec > 0 then e := 38;
+              if e > 0 then goto error;
+              { D }
               machine.rules[qi, b].D := ss[b * 5 + 3];
-              // machine.rules[qi, b].qm := ss[b * 5 + 4] + ss[b * 5 + 5];
-
-              // !!! Érték és hiba kiértékelés ide !!!
-
+              { - check value }
+              ec := 1;
+              for bb := 1 to length(HMD) do
+                if machine.rules[qi, b].D = HMD[bb] then ec := 0;
+              if ec > 0 then e := 34;
+              if e > 0 then goto error;
+              { qm }
+              val(ss[b * 5 + 4] + ss[b * 5 + 5], i, ec);
+              { - check value }
+              if ec > 0 then e := 35;
+              if (i < 0) or (i > 99) then e := 36;
+              if e > 0 then goto error;
+              machine.rules[qi, b].qm := i;
               b := b + 1;
             end;
           end;

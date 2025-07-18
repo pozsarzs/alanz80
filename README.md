@@ -127,8 +127,15 @@ The set has cardinality at least one, and its first element is always the blank
 symbol. If the first symbol specified in the CONF section is not blank, then it
 will be inserted.
 
+#### Head movement directions
 
-!!!! ide jön a fejmozgás !!!!
+Finite set of head movement directions is as follows:
+
+D = {'L', 'S', 'R'}, where the
+
+- L is the left direction,
+- S is the stay here, and
+- R is the right direction.
 
 #### Operation
 

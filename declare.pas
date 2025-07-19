@@ -42,6 +42,7 @@ var
   qb:           byte;                                     { breakpoint address }
   quit:         boolean;                                          { allow exit }
   splitted:     array[0..7] of TSplitted;                   { splitted command }
+  t36com:       array[0..15] of TCommand;     { optional commands from t36file }
   trace:        boolean;                                       { turn tracking }
 const
   COMMARRSIZE = 12;
@@ -86,17 +87,7 @@ const
                 'symbol [symbols|-]       ',
                 'tape [content|-]         ',
                 'trace [on|off]           '));
-  MESSAGE:      array[0..50] of string[61] = (
-
-
-
-
-
-
-
-
-
-
+  MESSAGE:      array[0..51] of string[61] = (
                 'No such command!',
                 'The STAT value is bad or missing.',
                 'The STAT value is out of range.',
@@ -147,4 +138,5 @@ const
                 'Missing mandatory STAT tag.',
                 'Missing mandatory SYMB tag.',
                 'Head position:    ',
-                'Program:');
+                'Program:',
+                'Commands:');

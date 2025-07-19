@@ -84,7 +84,16 @@ begin
     { - initial tape content and (relative) head start position }
     cmd_tape('');
     { - program list }
+    if length(machine.progname) > 0 then writeln;
     cmd_prog;
+    { - optional commands from t36 file }
+    if length(t36com[0]) > 0 then
+    begin
+      writeln;
+      writeln(MESSAGE[51]);
+      for b := 0 to 15 do
+        if length(t36com[b]) > 0 then writeln(t36com[b]);
+    end;
   end;
 end;
 
@@ -92,6 +101,7 @@ end;
 procedure cmd_load(p1: TSplitted);
 var
   b, bb:          byte;
+  comline:        byte;
   e:              byte;                                           { error code }
   ec, i:          integer;
   lab, seg:       byte;
@@ -146,6 +156,7 @@ begin
       cmd_reset(false);
       { read text file content }
       line := 0;
+      comline := 0;
       repeat
         readln(t36file, s);
         line := line + 1;
@@ -276,6 +287,7 @@ begin
                  end;
             end;
           end;
+          { load program }
           if (s[1] + s[2] = 'ST') and (stat_segment = $05) then
           begin
             { STnn found in the opened segment PROG and CARD }
@@ -327,6 +339,15 @@ begin
               b := b + 1;
             end;
           end;
+          { load command line commands }
+          if (stat_segment and $41 = $41) then
+            if (s <> LSEGMENTS[3] + LBEGIN) and
+               (s <> LSEGMENTS[3] + LEND) and
+               (s <> LSEGMENTS[0] + LEND) then
+            begin
+              t36com[comline] := s;
+              comline := comline + 1;
+            end;
         end;
       until (eof(t36file)) or (line = 255);
     error:  
@@ -365,15 +386,18 @@ procedure cmd_prog;
 var
  qi, r: byte;
 begin
-  writeln(MESSAGE[50]);
-  for qi := 1 to 99 do
+  if length(machine.progname) = 0 then writeln(MESSAGE[20]) else
   begin
-    for r := 0 to 39 do
-      if machine.rules[qi, r].sj <> ''
-      then
-        write(addzero(qi), machine.rules[qi, r].sj, machine.rules[qi, r].sk,
-              machine.rules[qi, r].d, addzero(machine.rules[qi, r].qm), ' ');
-      if machine.rules[qi, 0].sj <> '' then writeln;
+    writeln(MESSAGE[50]);
+    for qi := 1 to 99 do
+    begin
+      for r := 0 to 39 do
+        if machine.rules[qi, r].sj <> ''
+        then
+          write(addzero(qi), machine.rules[qi, r].sj, machine.rules[qi, r].sk,
+                machine.rules[qi, r].d, addzero(machine.rules[qi, r].qm), ' ');
+        if machine.rules[qi, 0].sj <> '' then writeln;
+    end;
   end;
 end;
 
@@ -399,8 +423,10 @@ begin
     states := 2;
     symbols := SPACE;
     tapepos := 1;
-    for b := 1 to 200 do tape := tape + SPACE;
+    for b := 1 to 200 do tape[b] := SPACE;
   end;
+  { reset t36 command buffer } 
+  for b := 0 to 15 do t36com[b] := '';
   { reset program status }
   qb := 255;
   prg_counter := 0;

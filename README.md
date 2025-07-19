@@ -90,6 +90,7 @@ TAPE END
 ; Section commands, this is optional.
 ; These commands affect the program running and can be specified 
 ; from the command line.
+; There can be a maximum of 16 lines and a maximum of 255 characters per line.
 COMM BEGIN
      ; show all operation
      TRACE ON

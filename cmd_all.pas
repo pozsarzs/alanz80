@@ -299,7 +299,7 @@ begin
             val(ss[3] + ss[4], qi, ec);
             { - check value }
             if ec > 0 then e := 32;
-            if (qi < 0) or (qi > 99) then e := 33;
+            if qi > 99 then e := 33;
             if e > 0 then goto error;
             delete(ss, 1, 4);
             b := 0;
@@ -423,14 +423,14 @@ begin
     states := 2;
     symbols := SPACE;
     tapepos := 1;
-    for b := 1 to 200 do tape[b] := SPACE;
+    tape := '';
+    for b := 1 to 255 do tape := tape + SPACE;
   end;
   { reset t36 command buffer } 
   for b := 0 to 15 do t36com[b] := '';
   { reset program status }
   qb := 255;
   prg_counter := 0;
-  prg_status := 0;
   if v then writeln(MESSAGE[26]);
 end;
 
@@ -535,13 +535,14 @@ begin
     begin
       write(MESSAGE[24]);
       for b := 1 to length(machine.tape) do
-        if machine.tape[b] <> SPACE then write(machine.tape[b]);
+        if machine.tape[b] <> SPACE then
+          write(machine.tape[b]);
       writeln;
       writeln(MESSAGE[49], machine.tapepos);
     end;
   end else
   begin
-    for b := 1 to 200 do machine.tape[b] := SPACE;
+    for b := 1 to 255 do machine.tape[b] := SPACE;
     if p1 = '-' then
     begin
       { reset symbol list }

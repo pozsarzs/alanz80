@@ -38,7 +38,6 @@ var
   com:          TCommand;                               { command line content }
   machine:      TTuring;                        { Turing machine configuration }
   prg_counter:  byte;                                        { program counter }
-  prg_status:   byte;                   { program status 0/1/2 stop/run/paused }
   qb:           byte;                                     { breakpoint address }
   quit:         boolean;                                          { allow exit }
   splitted:     array[0..7] of TSplitted;                   { splitted command }

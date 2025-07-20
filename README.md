@@ -42,8 +42,8 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |virtual tape length     |255 cell                                             |
 |tape input data length  |50 cell                                              |
 |example program         |4 scripts                                            |
-|load from file          |from standard input                                  |
-|built-in commands       |13 (can also be used in a program file)              |
+|load from file          |program code (*.t36)                                 |
+|built-in commands       |14 (can also be used in a program file)              |
 
 ### Screenshots
 
@@ -170,16 +170,17 @@ The program can be controlled with the following command line commands.
 |  1|`break [01..99\|-]`    |set, get and reset breakpoint state (qb)    |
 |  2|`help [command]`       |help with using the program                 |
 |  3|`info`                 |show all information about this machine     |
-|  4|`load filename.t36`    |load program file                           |
-|  5|`prog`                 |show program data                           |
-|  6|`quit`                 |exit the AlanZ80 program                    |
-|  7|`reset`                |reset Turing-machine                        |
-|  8|`run [head position]`  |run program from head position              |
-|  9|`state [2..99]`        |set and get number of state (\|Q\|)         |
-| 10|`step [head position]` |run program step-by-step from head position |
-| 11|`symbol [symbols\|-]`  |set, get and reset symbol set (S)           |
-| 12|`tape [content\|-]`    |set, get and reset tape content             |
-| 13|`trace [on\|off]`      |turn tracking on and off                    |
+|  4|`limit [10..32767\|-]` |set, get and reset number of steps          |
+|  5|`load filename.t36`    |load program file                           |
+|  6|`prog`                 |show program data                           |
+|  7|`quit`                 |exit the AlanZ80 program                    |
+|  8|`reset [tm]`           |reset program or restore Turing-machine     |
+|  9|`run [head position]`  |run program from head position              |
+| 10|`state [2..99]`        |set and get number of state (\|Q\|)         |
+| 11|`step [head position]` |run program step-by-step from head position |
+| 12|`symbol [symbols\|-]`  |set, get and reset symbol set (S)           |
+| 13|`tape [content\|-]`    |set, get and reset tape content             |
+| 14|`trace [on\|off]`      |turn tracking on and off                    |
 
 [^1]: ["On Computable Numbers, with an Application to the Entscheidungsproblem"](https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf)
 

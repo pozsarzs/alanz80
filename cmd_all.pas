@@ -254,7 +254,7 @@ begin
                    ss := '';
                    for b := 5 to length(s) do
                      ss := ss + s[b];
-                   insert(ss, machine.tape, 100);
+                   insert(ss, machine.tape, 50);
                  end;
               3: { STAT found }
                  if stat_segment = $01 then
@@ -392,11 +392,11 @@ begin
     for qi := 1 to 99 do
     begin
       for r := 0 to 39 do
-        if machine.rules[qi, r].sj <> ''
+        if machine.rules[qi, r].sj <> #0
         then
           write(addzero(qi), machine.rules[qi, r].sj, machine.rules[qi, r].sk,
                 machine.rules[qi, r].d, addzero(machine.rules[qi, r].qm), ' ');
-        if machine.rules[qi, 0].sj <> '' then writeln;
+        if machine.rules[qi, 0].sj <> #0 then writeln;
     end;
   end;
 end;
@@ -411,14 +411,14 @@ begin
   begin
     progdesc := '';
     progname := '';
-    qi := 1;
+    machine.aqi := 1;
     for b := 0 to 99 do
       for bb := 0 to 39 do
       begin
         rules[b, bb].D := 'R';
         rules[b, bb].qm := 1; 
-        rules[b, bb].Sj := ''; 
-        rules[b, bb].Sk := '';
+        rules[b, bb].Sj := #0; 
+        rules[b, bb].Sk := #0;
       end;
     states := 2;
     symbols := SPACE;
@@ -430,7 +430,6 @@ begin
   for b := 0 to 15 do t36com[b] := '';
   { reset program status }
   qb := 255;
-  prg_counter := 0;
   if v then writeln(MESSAGE[26]);
 end;
 

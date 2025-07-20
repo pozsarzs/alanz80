@@ -14,20 +14,22 @@
 
 type
   T4tuple =     record                                            { tuple type }
-    d:          string[1];                           { head movement direction }
+    d:          char;                                { head movement direction }
     qm:         byte;                                            { final state }
-    sj:         string[1];                                       { read symbol }
-    sk:         string[1];                              { symbol to be written }
+    sj:         char;                                            { read symbol }
+    sk:         char;                                   { symbol to be written }
   end;
   TTuring =     record                                    { Turing machine type}
+    aqi:        byte;                                           { actual state }
+    asj:        char;                                            { read symbol }
+    ask:        char;                                   { symbol to be written }
     progdesc:   string[64];                           { description of program }
     progname:   string[8];                                   { name of program }
-    qi:         byte;                                           { actual state }
     rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
     states:     byte;                                       { number of states }
     symbols:    string[40];                                     { symbolum set }
-    tapepos:    byte;                                 { relative head position }
     tape:       string[255];                                            { tape }
+    tapepos:    integer;                              { relative head position }
   end;
   TCommand =    string[255];                   { different length string types }
   TFilename =   string[12];
@@ -37,12 +39,13 @@ var
   b:            byte;
   com:          TCommand;                               { command line content }
   machine:      TTuring;                        { Turing machine configuration }
-  prg_counter:  byte;                                        { program counter }
   qb:           byte;                                     { breakpoint address }
   quit:         boolean;                                          { allow exit }
   splitted:     array[0..7] of TSplitted;                   { splitted command }
   t36com:       array[0..15] of TCommand;     { optional commands from t36file }
   trace:        boolean;                                       { turn tracking }
+  tapeposbak:   byte;                   { backup of the relative head position }
+  tapebak:      string[255];             { backup of the original tape content }
 const
   COMMARRSIZE = 12;
   COMMENT =     #59;
@@ -66,7 +69,7 @@ const
                 'load program file',
                 'show program',
                 'exit the program',
-                'reset Turing-machine',
+                'reset program or restore Turing-machine',                
                 'run program from head position',
                 'set and get number of state (|Q|)',
                 'run program step-by-step from head position',
@@ -79,14 +82,14 @@ const
                 'load filename.t36        ',
                 'prog                     ',
                 'quit                     ',
-                'reset                    ',
+                'reset [tm]               ',
                 'run [head position]      ',
                 'state [2..99]            ',
                 'step [head position]     ',
                 'symbol [symbols|-]       ',
                 'tape [content|-]         ',
                 'trace [on|off]           '));
-  MESSAGE:      array[0..51] of string[61] = (
+  MESSAGE:      array[0..57] of string[61] = (
                 'No such command!',
                 'The STAT value is bad or missing.',
                 'The STAT value is out of range.',
@@ -113,7 +116,7 @@ const
                 'The tape is empty.',
                 'Tape content:     ',
                 'The tape content is deleted.',
-                'The Turing machine has been reset.',
+                'The program has been reset.',
                 'The tape data is too long and has been truncated!',
                 'Run program from head position ',
                 'Step-by-step execution head position ',
@@ -138,4 +141,10 @@ const
                 'Missing mandatory SYMB tag.',
                 'Head position:    ',
                 'Program:',
-                'Commands:');
+                'Commands:',
+                'The Turing machine has been restore.',
+                'The Turing machine has started.',
+                'The Turing machine has stopped.',
+                'count  head  qi  sj  sk  D  qm',
+                'The scanned symbol is not in the symbol set.',
+                'The number of steps has reached the maximum.');

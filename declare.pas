@@ -80,23 +80,22 @@ const
                 'turn tracking on and off',
                 'set, get and reset number of steps',
                 'restore Turing-machine to original state'),(
-                'break [01..99|-]         ',
-                'help [command]           ',
-                'info                     ',
-                'load filename.t36        ',
-                'prog                     ',
-                'quit                     ',
-                'reset [tm]               ',
-                'run [head position]      ',
-                'state [2..99]            ',
-                'step [head position]     ',
-                'symbol [symbols|-]       ',
-                'tape [content|-]         ',
-                'trace [on|off]           ',
-                'limit [10..32767|-]      ',
-                'restore                  '));
-  MESSAGE:      array[0..61] of string[61] = (
-
+                'break [01..99|-]           ',
+                'help [command]             ',
+                'info                       ',
+                'load filename.t36          ',
+                'prog                       ',
+                'quit                       ',
+                'reset [tm]                 ',
+                'run [head pos.: -50..+50]  ',
+                'state [2..99]              ',
+                'step [head pos.: -50..+50] ',
+                'symbol [symbols|-]         ',
+                'tape [content|-]           ',
+                'trace [on|off]             ',
+                'limit [10..32767|-]        ',
+                'restore                    '));
+  MESSAGE:      array[0..66] of string[61] = (
                 'No such command!',
                 'The STAT value is bad or missing.',
                 'The STAT value is out of range.',
@@ -158,4 +157,9 @@ const
                 'No program step limit set.',
                 'The program step limit is ',
                 'The program step limit is deleted.',
-                'The program step limit is set to ');
+                'The program step limit is set to ',
+                'Press any key to continue!',
+                'The set breakpoint state has been reached.',
+                'The specified head position is invalid, ignored.',
+                'The specified head position is out of range, ignored.',
+                'Temporary starting head position set: ');

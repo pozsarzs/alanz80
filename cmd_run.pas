@@ -15,83 +15,85 @@
 { COMMAND 'run' }
 procedure cmd_run(p1: boolean; p2: TSplitted);
 var
-  e: byte;
   b: byte;
+  e: byte;
+  ec: integer;
+  ip2: integer;
+  verbose: boolean;
 label
   stop, error, found;
 begin
-
-  // *** Emlékeztető, ne felejtsd el törölni! ***
-  //
-  // Argumentumok:
-  // p1: lépésenkénti végrehajtás
-  // p2: kezdő fejpozíció, felülbírálja az spos machine.tapepos értékét, ehhez
-  //     értékvizsgálat is kell
-  //
-  // Működése:
-  // + A gép qi = 1 állapotban van.
-  // + Beolvassa az machine.tapepos + 49 abszolút szalagpozícióban található
-  //   szimbólumot.
-  // + Megkeresi a machine.rules[qi, n].sj értékei között, ha nincs ilyen,
-  //   akkor üzenettel megáll. Ha van, akkor kicseréli a szimbólumot a
-  //   machine.rules[qi, n].sk értékre, módosítja a machine.tapepos-t a
-  //   machine.rules[qi, n].D-nek megfelelően majd módosítja a gép állapotát
-  //   machine.rules[qi, n].qm-re.
-  // + Visszatér az 1. lépésre és mindaddig folytatja, amíg a qi <> 0.
-
-  // Egyebek:
-  // + Ha trace = true, akkor minden lépésnél ki kell írni a műveleteket.
-  // - Ha a p1 = true, akkor minden lépés után várni kell a felhasználóra.
-  // - Ha a breakpoint be van állítva, akkor a megadott állapotnál várni kell
-  //   a felhasználóra.
-
+  verbose := trace or p1;
+  { set override initial head position }
+  if length(p2) > 0 then
+  begin
+    val(p2, ip2, ec);
+    if ec = 0
+    then
+      if (ip2 >= -50) and (ip2 <= 50) then e := 0 else e := 64
+    else e := 65;
+    { - error messages or set temporary head start position }
+    if e > 0 then writeln(MESSAGE[e]) else
+    begin
+      machine.tapepos := ip2;
+      writeln(MESSAGE[66], machine.tapepos, '.');
+    end;
+  end;
   e := 0;
-  { create backup }
-  tapeposbak := machine.tapepos;
-  tapebak := machine.tape;
-  machine.aqi := 1;
   { show initial data }
   cmd_tape('');
   writeln(MESSAGE[53]);
   { start machine }
-  if trace then writeln;
-  if trace then writeln(MESSAGE[55]);
-  machine.progcount := 1;
+  if verbose then writeln;
+  if verbose then writeln(MESSAGE[55]);
+  machine.progcount := 0;
   repeat
-    if trace then write(machine.progcount:5, '   ', addzero(machine.tapepos), '   ',
+    machine.progcount := machine.progcount + 1;
+    if verbose then write(machine.progcount:5, '   ', addzero(machine.tapepos), '   ',
                         addzero(machine.aqi), '   ') else write('#');
-    machine.asj := machine.tape[machine.tapepos + 49]; 
-    if trace then write(machine.asj, '   ');
+    machine.asj := machine.tape[machine.tapepos + 99]; 
+    if verbose then write(machine.asj, '   ');
     for b := 0 to 39 do
       if machine.rules[machine.aqi, b].sj = machine.asj then goto found;
     e := 56;
     goto error;
  found:
-    machine.tape[machine.tapepos + 49] := machine.rules[machine.aqi, b].sk;
-    if trace then write(machine.tape[machine.tapepos + 49], '  ');
+    machine.tape[machine.tapepos + 99] := machine.rules[machine.aqi, b].sk;
+    if verbose then write(machine.tape[machine.tapepos + 99], '  ');
     case machine.rules[machine.aqi, b].D of
       'R': machine.tapepos := machine.tapepos + 1;
       'L': machine.tapepos := machine.tapepos - 1;
     end;
-    if trace then write(machine.rules[machine.aqi, b].D, '  ');
+    if verbose then write(machine.rules[machine.aqi, b].D, '  ');
     machine.aqi := machine.rules[machine.aqi, b].qm;
-    if trace then writeln(addzero(machine.aqi));
-    machine.progcount := machine.progcount + 1;
-    if machine.progcount = 32767 then e := 57;
+    if verbose then writeln(addzero(machine.aqi));
+    { - check program set limit}   
+    if machine.progcount = sl then
+    begin
+      writeln(MESSAGE[57]);
+      goto stop;
+    end;
+    { - check breakpoint }   
+    if machine.aqi = qb then
+    begin
+      writeln(MESSAGE[63]);
+      writeln(MESSAGE[62]);
+      waitforkey;
+    end;
+    { - step-by-step running mode }   
+    if p1 then
+    begin
+      writeln(MESSAGE[62]);
+      waitforkey;
+    end;
   until (machine.aqi = 0) or (machine.progcount = 32767);
   writeln;
-  writeln(MESSAGE[54]);
   goto stop;
 error:
   { machine is stopped }
   writeln(MESSAGE[e]);
 stop:
+  writeln(MESSAGE[54]);
   { show final data (result) }
   cmd_tape('');
-  { restore Turing machine initial state }
-  machine.tapepos := tapeposbak;
-  machine.tape := tapebak;
-  machine.aqi := 1;
-
-//  cmd_reset(true);
 end;

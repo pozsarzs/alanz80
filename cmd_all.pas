@@ -125,7 +125,7 @@ begin
       val(p1, ip1, ec);
       if ec = 0
       then
-        if (ip1 >= 0) and (ip1 <= 32767) then e := 0 else e := 7
+        if ((ip1 >= 0) and (ip1 <= 32767)) then e := 0 else e := 7
       else e := 8;
       { - error messages or primary operation }
       if e > 0 then writeln(MESSAGE[e]) else
@@ -294,7 +294,7 @@ begin
                    ss := '';
                    for b := 5 to length(s) do
                      ss := ss + s[b];
-                   insert(ss, machine.tape, 50);
+                   insert(ss, machine.tape, 100);
                  end;
               3: { STAT found }
                  if stat_segment = $01 then
@@ -457,7 +457,7 @@ begin
   begin
     progdesc := '';
     progname := '';
-    progcount := 1;
+    progcount := 0;
     aqi := 1;
     for b := 0 to 99 do
       for bb := 0 to 39 do
@@ -477,8 +477,9 @@ begin
   end;
   { reset t36 command buffer } 
   for b := 0 to 15 do t36com[b] := '';
-  { reset program status }
+  { reset program others }
   qb := 255;
+  sl := 32767;
   if v then writeln(MESSAGE[26]);
 end;
 

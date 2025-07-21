@@ -15,7 +15,6 @@
 { COMMAND 'run' }
 procedure cmd_run(p1: boolean; p2: TSplitted);
 var
-  count: integer;
   e: byte;
   b: byte;
 label
@@ -57,9 +56,9 @@ begin
   { start machine }
   if trace then writeln;
   if trace then writeln(MESSAGE[55]);
-  count := 1;
+  machine.progcount := 1;
   repeat
-    if trace then write(count:5, '   ', addzero(machine.tapepos), '   ',
+    if trace then write(machine.progcount:5, '   ', addzero(machine.tapepos), '   ',
                         addzero(machine.aqi), '   ') else write('#');
     machine.asj := machine.tape[machine.tapepos + 49]; 
     if trace then write(machine.asj, '   ');
@@ -77,9 +76,9 @@ begin
     if trace then write(machine.rules[machine.aqi, b].D, '  ');
     machine.aqi := machine.rules[machine.aqi, b].qm;
     if trace then writeln(addzero(machine.aqi));
-    count := count + 1;
-    if count = 32767 then e := 57;
-  until (machine.aqi = 0) or (count = 32767);
+    machine.progcount := machine.progcount + 1;
+    if machine.progcount = 32767 then e := 57;
+  until (machine.aqi = 0) or (machine.progcount = 32767);
   writeln;
   writeln(MESSAGE[54]);
   goto stop;
@@ -90,5 +89,9 @@ stop:
   { show final data (result) }
   cmd_tape('');
   { restore Turing machine initial state }
+  machine.tapepos := tapeposbak;
+  machine.tape := tapebak;
+  machine.aqi := 1;
+
 //  cmd_reset(true);
 end;

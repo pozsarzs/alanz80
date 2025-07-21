@@ -97,6 +97,46 @@ begin
   end;
 end;
 
+{ COMMAND 'limit' }
+procedure cmd_limit(p1: TSplitted);
+var
+  e:   byte;
+  ec:  integer;
+  ip1: integer;
+begin
+  e := 0;
+  { check parameters }
+  if length(p1) = 0 then
+  begin
+    { get step limit }
+    if sl = 32767
+      then writeln(MESSAGE[58])
+      else writeln(MESSAGE[59], addzero(sl), '.');
+  end else
+  begin
+    if p1 = '-' then
+    begin
+      { reset step limit }
+      sl := 32767;
+      writeln(MESSAGE[60])
+    end else
+    begin
+      { set step limit }
+      val(p1, ip1, ec);
+      if ec = 0
+      then
+        if (ip1 >= 0) and (ip1 <= 32767) then e := 0 else e := 7
+      else e := 8;
+      { - error messages or primary operation }
+      if e > 0 then writeln(MESSAGE[e]) else
+      begin
+        sl := ip1;
+        writeln(MESSAGE[61], addzero(sl), '.');
+      end;
+    end;
+  end;
+end;
+
 { COMMAND 'load' }
 procedure cmd_load(p1: TSplitted);
 var
@@ -377,7 +417,13 @@ begin
      7: writeln(MESSAGE[e]);
     21: writeln(MESSAGE[e] + p1 + '.');
   else
-    writeln(MESSAGE[5]);
+    begin
+      { create backup }
+      tapeposbak := machine.tapepos;
+      tapebak := machine.tape;
+      machine.aqi := 1;
+      writeln(MESSAGE[5]);
+    end;
   end;
 end;
 
@@ -411,7 +457,8 @@ begin
   begin
     progdesc := '';
     progname := '';
-    machine.aqi := 1;
+    progcount := 1;
+    aqi := 1;
     for b := 0 to 99 do
       for bb := 0 to 39 do
       begin
@@ -424,6 +471,8 @@ begin
     symbols := SPACE;
     tapepos := 1;
     tape := '';
+    tapeposbak := tapepos;
+    tapebak := tape;
     for b := 1 to 255 do tape := tape + SPACE;
   end;
   { reset t36 command buffer } 
@@ -431,6 +480,20 @@ begin
   { reset program status }
   qb := 255;
   if v then writeln(MESSAGE[26]);
+end;
+
+{ COMMAND 'restore' }
+procedure cmd_restore(v: boolean);
+begin
+  { restore Turing machine to original state }
+  with machine do
+  begin
+    aqi := 1;
+    progcount := 1;
+    tapepos := tapeposbak;
+    tape := tapebak;
+  end;
+  if v then writeln(MESSAGE[52]);
 end;
 
 { COMMAND 'state' }

@@ -23,6 +23,7 @@ type
     aqi:        byte;                                           { actual state }
     asj:        char;                                            { read symbol }
     ask:        char;                                   { symbol to be written }
+    progcount:  integer;                                { program step counter }
     progdesc:   string[64];                           { description of program }
     progname:   string[8];                                   { name of program }
     rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
@@ -38,6 +39,7 @@ type
 var
   b:            byte;
   com:          TCommand;                               { command line content }
+  sl:           integer;                                  { program step limit } 
   machine:      TTuring;                        { Turing machine configuration }
   qb:           byte;                                     { breakpoint address }
   quit:         boolean;                                          { allow exit }
@@ -47,7 +49,7 @@ var
   tapeposbak:   byte;                   { backup of the relative head position }
   tapebak:      string[255];             { backup of the original tape content }
 const
-  COMMARRSIZE = 12;
+  COMMARRSIZE = 14;
   COMMENT =     #59;
   SPACE =       #95;
   HMD =         'LSR';                                { head moving directions }
@@ -59,9 +61,9 @@ const
   HEADER3 =     'Licence: EUPL v1.2';
   HINT =        'Type ''help [command]'' for more information.';
   PROMPT =      'TM>';
-  COMMANDS:     array[0..COMMARRSIZE] of string[6] = ('break', 'help', 'info',
+  COMMANDS:     array[0..COMMARRSIZE] of string[7] = ('break', 'help', 'info',
                 'load', 'prog', 'quit', 'reset', 'run', 'state', 'step',
-                'symbol', 'tape', 'trace');
+                'symbol', 'tape', 'trace', 'limit', 'restore');
   COMMANDS_INF: array[0..1,0..COMMARRSIZE] of string[63] = ((
                 'set, get and reset breakpoint state (qb)',
                 'help with using the program',
@@ -69,13 +71,15 @@ const
                 'load program file',
                 'show program',
                 'exit the program',
-                'reset program or restore Turing-machine',                
+                'reset program',
                 'run program from head position',
                 'set and get number of state (|Q|)',
                 'run program step-by-step from head position',
                 'set, get and reset symbol set (S)',
                 'set, get and reset tape content',
-                'turn tracking on and off'),(
+                'turn tracking on and off',
+                'set, get and reset number of steps',
+                'restore Turing-machine to original state'),(
                 'break [01..99|-]         ',
                 'help [command]           ',
                 'info                     ',
@@ -88,8 +92,11 @@ const
                 'step [head position]     ',
                 'symbol [symbols|-]       ',
                 'tape [content|-]         ',
-                'trace [on|off]           '));
-  MESSAGE:      array[0..57] of string[61] = (
+                'trace [on|off]           ',
+                'limit [10..32767|-]      ',
+                'restore                  '));
+  MESSAGE:      array[0..61] of string[61] = (
+
                 'No such command!',
                 'The STAT value is bad or missing.',
                 'The STAT value is out of range.',
@@ -147,4 +154,8 @@ const
                 'The Turing machine has stopped.',
                 'count  head  qi  sj  sk  D  qm',
                 'The scanned symbol is not in the symbol set.',
-                'The number of steps has reached the maximum.');
+                'The number of steps has reached the maximum.',
+                'No program step limit set.',
+                'The program step limit is ',
+                'The program step limit is deleted.',
+                'The program step limit is set to ');

@@ -43,7 +43,7 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |tape input data length  |50 cell                                              |
 |example program         |4 scripts                                            |
 |load from file          |program code (*.t36)                                 |
-|built-in commands       |14 (can also be used in a program file)              |
+|built-in commands       |15 (can also be used in a program file)              |
 
 ### Screenshots
 
@@ -96,6 +96,7 @@ COMM BEGIN
      TRACE ON
      ; run step-by-step
      STEP
+     RESTORE
 COMM END
 
 PROG END
@@ -174,13 +175,14 @@ The program can be controlled with the following command line commands.
 |  5|`load filename.t36`    |load program file                           |
 |  6|`prog`                 |show program data                           |
 |  7|`quit`                 |exit the AlanZ80 program                    |
-|  8|`reset [tm]`           |reset program or restore Turing-machine     |
-|  9|`run [head position]`  |run program from head position              |
-| 10|`state [2..99]`        |set and get number of state (\|Q\|)         |
-| 11|`step [head position]` |run program step-by-step from head position |
-| 12|`symbol [symbols\|-]`  |set, get and reset symbol set (S)           |
-| 13|`tape [content\|-]`    |set, get and reset tape content             |
-| 14|`trace [on\|off]`      |turn tracking on and off                    |
+|  8|`reset`                |reset program                               |
+|  9|`restore`              |restore Turing-machine to original state    |
+| 10|`run [head position]`  |run program from head position              |
+| 11|`state [2..99]`        |set and get number of state (\|Q\|)         |
+| 12|`step [head position]` |run program step-by-step from head position |
+| 13|`symbol [symbols\|-]`  |set, get and reset symbol set (S)           |
+| 14|`tape [content\|-]`    |set, get and reset tape content             |
+| 15|`trace [on\|off]`      |turn tracking on and off                    |
 
 [^1]: ["On Computable Numbers, with an Application to the Entscheidungsproblem"](https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf)
 

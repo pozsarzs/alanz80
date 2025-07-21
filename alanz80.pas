@@ -20,6 +20,7 @@ uses crt;
 
 procedure cmd_prog; forward;
 procedure cmd_reset(v: boolean); forward;
+procedure cmd_restore(v: boolean); forward;
 procedure cmd_tape(p1: TSplitted); forward;
 procedure cmd_state(p1: TSplitted); forward;
 procedure cmd_symbol(p1: TSplitted); forward;
@@ -143,6 +144,8 @@ begin
           10: cmd_symbol(splitted[1]);
           11: cmd_tape(splitted[1]);
           12: cmd_trace(splitted[1]);
+          13: cmd_limit(splitted[1]);
+          14: cmd_restore(true);
         end;
       end else writeln(MESSAGE[0]);
     end;

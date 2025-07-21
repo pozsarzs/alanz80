@@ -423,6 +423,16 @@ begin
       tapebak := machine.tape;
       machine.aqi := 1;
       writeln(MESSAGE[5]);
+      { convert commands to lowercase }
+      for b := 0 to 15 do
+        if length(t36com[b]) > 0 then
+          for bb := 1 to length(t36com[b]) do
+            if (ord(t36com[b][bb]) >= 65) and (ord(t36com[b][bb]) <= 90) then
+            t36com[b][bb] := chr(ord(t36com[b][bb]) + 32);
+      { run commands }
+      for b := 0 to 15 do
+        if length(t36com[b]) > 0 then
+          if parsingcommand(t36com[b]) then halt;
     end;
   end;
 end;

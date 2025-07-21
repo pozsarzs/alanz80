@@ -18,6 +18,7 @@ uses crt;
 
 {$I declare.pas }
 
+function parsingcommand(command: TCommand): boolean; forward;
 procedure cmd_prog; forward;
 procedure cmd_reset(v: boolean); forward;
 procedure cmd_restore(v: boolean); forward;

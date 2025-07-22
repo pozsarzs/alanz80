@@ -1,0 +1,24 @@
+; Example program file for AlanZ80 Turing machine implementation
+; The program scans the input, deletes every 1 except the first.
+
+PROG BEGIN
+NAME BEONLY1
+DESC Delete all one, except the first
+SYMB 0123456789
+STAT 3
+
+CARD BEGIN
+     ST01 00R01 11R02 22R01 33R01 44R01 55R01 66R01 77R01 88R01 99R01 __R00
+     ST02 00R02 1_R02 22R02 33R02 44R02 55R02 66R02 77R02 88R02 99R02 __R00
+CARD END
+
+TAPE BEGIN
+     SYMB 0112314114
+     SPOS 1
+TAPE END
+COMM BEGIN
+     TRACE ON
+     RUN
+     RESTORE
+COMM END
+PROG END

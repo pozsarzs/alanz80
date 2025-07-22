@@ -1,0 +1,25 @@
+; Example program file for AlanZ80 Turing machine implementation
+; The program swaps the numbers, prints the steps, and then exits.
+
+PROG BEGIN
+NAME EVENONES
+DESC The number of 1s should always be even.                                       
+SYMB 01
+STAT 3
+
+CARD BEGIN
+     ST01 00R01 11R02 __R00
+     ST02 00R02 11R01 _1R00
+CARD END
+
+TAPE BEGIN
+     SYMB 01110011
+     SPOS 1
+TAPE END
+COMM BEGIN
+     TRACE ON
+     RUN
+     RESTORE
+     QUIT
+COMM END
+PROG END

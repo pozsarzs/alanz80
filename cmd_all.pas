@@ -606,18 +606,19 @@ begin
     { get symbol list }
     if tapeisempty then writeln(MESSAGE[23]) else
     begin
-      write(MESSAGE[24]);
-      for b := 1 to length(machine.tape) do
-        if machine.tape[b] <> SPACE then
-          write(machine.tape[b]);
-      writeln;
+      s := machine.tape;
+      { - remove blank symbol from start of line }
+      while (s[1] = #95) do delete(s, 1, 1);
+      { - remover emove blank symbol from end of line }
+      while (s[length(s)] = #95) do delete(s, length(s), 1);
+      writeln(MESSAGE[24], s);
       writeln(MESSAGE[49], machine.tapepos);
     end;
   end else
   begin
-    for b := 1 to 255 do machine.tape[b] := SPACE;
-    if p1 = '-' then
+   if p1 = '-' then
     begin
+      for b := 1 to 255 do machine.tape[b] := SPACE;
       { reset symbol list }
       writeln(MESSAGE[25])
     end else
@@ -627,8 +628,9 @@ begin
       for b := 1 to length(p1) do s := upcase(p1);
       { - warning messages }
       if length(p1) > 50 then writeln(MESSAGE[27]);
-      insert(s, machine.tape, 50);
-      writeln(MESSAGE[24], s, '''.');
+      for b := 1 to 255 do machine.tape[b] := SPACE;
+      insert(s, machine.tape, 100);
+      writeln(MESSAGE[24], s, '.');
     end;
   end;  
 end;

@@ -14,17 +14,9 @@
 
 program alanz80;
 { Uncomment the next lines if you are compiling with TP > 3.x or Freepascal }
-uses crt;
+{ uses crt; }
 
 {$I declare.pas }
-
-function parsingcommand(command: TCommand): boolean; forward;
-procedure cmd_prog; forward;
-procedure cmd_reset(v: boolean); forward;
-procedure cmd_restore(v: boolean); forward;
-procedure cmd_tape(p1: TSplitted); forward;
-procedure cmd_state(p1: TSplitted); forward;
-procedure cmd_symbol(p1: TSplitted); forward;
 
 { WAIT FOR A KEY }
 procedure waitforkey;
@@ -34,11 +26,11 @@ procedure waitforkey;
                  AX, BX, CX, DX, BP, SI, DI, DS, ES, Flags: integer;
                end;
   var
-    regs:    TRegPack; }
+    regs:      TRegPack; }
 
 begin
   { Uncomment the next lines if you are compiling with TP > 3.x or Freepascal }
-  readkey;
+  { readkey; }
 
   { Uncomment the next lines if you are compiling with Turbo Pascal 3.x on DOS }
   { regs.AX := $0100;
@@ -46,39 +38,78 @@ begin
     writeln; }
 
   { Uncomment the next lines if you are compiling with Turbo Pascal 3.x on CP/M }
-  { bdos(1);
-    writeln; }
-end; 
+  bdos(1);
+  writeln;
+end;
 
 { INSERT ZERO BEFORE [0-9] }
-function addzero(v: integer): TTwoDigit;
+function addzero(value: integer): TTwoDigit;
 var
-  u: TTwoDigit;
+  result: TTwoDigit;
 begin
-  str(v:0, u);
-  if length(u) = 1 then u := '0' + u;
-   addzero := u;
+  str(value:0, result);
+  if length(result) = 1 then result := '0' + result;
+    addzero := result;
 end;
 
 { CHECK TAPE CONTENT }
 function tapeisempty: boolean;
+var
+  bi: byte;
 begin
   tapeisempty := true;
-  for b := 1 to 200 do
-    if machine.tape[b] <> SPACE then tapeisempty := false;
+  for bi := 1 to 200 do
+    if machine.tape[bi] <> SPACE then tapeisempty := false;
 end;
 
-{$i cmd_all.pas}
-{$i cmd_run.pas}
+{ COMMAND 'reset' }
+procedure cmd_reset(verbose: boolean);
+var
+  bi, bj: byte;
+begin
+  { reset machine configuration }
+  with machine do
+  begin
+    progdesc := '';
+    progname := '';
+    progcount := 0;
+    aqi := 1;
+    for bi := 0 to 99 do
+      for bj := 0 to 39 do
+      begin
+        rules[bi, bj].D := 'R';
+        rules[bi, bj].qm := 1; 
+        rules[bi, bj].Sj := #0; 
+        rules[bi, bj].Sk := #0;
+      end;
+    states := 2;
+    symbols := SPACE;
+    tapepos := 1;
+    tape := '';
+    tapeposbak := tapepos;
+    tapebak := tape;
+    for bi := 1 to 255 do tape := tape + SPACE;
+  end;
+  { reset t36 command buffer } 
+  for bi := 0 to 15 do t36com[bi] := '';
+  { reset program others }
+  qb := 255;
+  sl := 32767;
+  if verbose then writeln(MESSAGE[26]);
+end;
 
 { PARSING COMMANDS }
 function parsingcommand(command: TCommand): boolean;
 var
-  a, b: byte;
-  s:    string[255];
-  o:    boolean;
+  bi, bj: byte;
+  s:      string[255];
+  o:      boolean;
 label
   break1, break2, break3, break4;
+
+{$i cmd_all.pas}
+{$i cmd_run.pas}
+
 begin
   parsingcommand := false;
   if (length(command) > 0) then
@@ -90,40 +121,40 @@ begin
     while (command[length(command)] = #32) or (command[length(command)] = #9) do
       delete(command, length(command), 1);
     { - remove extra space and tab from line }
-    for b := 1 to 255 do
+    for bi := 1 to 255 do
     begin
-      if b = length(command) then goto break1;
-      if command[b] <> #32 then o := false;
-      if (command[b] = #32) and o then command[b] :='@';
-      if command[b] = #32 then o := true;
+      if bi = length(command) then goto break1;
+      if command[bi] <> #32 then o := false;
+      if (command[bi] = #32) and o then command[bi] :='@';
+      if command[bi] = #32 then o := true;
     end;
   break1:
     s := '';
-    for b := 1 to length(command) do
-      if command[b] <> '@' then s := s + command[b];
+    for bi := 1 to length(command) do
+      if command[bi] <> '@' then s := s + command[bi];
     command := s;
     { - split command to 8 slices }
-    for b := 0 to 7 do
-      splitted[b] := '';
-    for a := 1 to length(command) do
-      if (command[a] = #32) and (command[a - 1] <> #92)
+    for bi := 0 to 7 do
+      splitted[bi] := '';
+    for bj := 1 to length(command) do
+      if (command[bj] = #32) and (command[bj - 1] <> #92)
         then goto break2
-        else splitted[0] := splitted[0] + command[a];
+        else splitted[0] := splitted[0] + command[bj];
   break2:
-    for b:= 1 to 7 do
+    for bi:= 1 to 7 do
     begin
-      for a := a + 1 to length(command) do
-        if (command[a] = #32) and (command[a - 1] <> #92)
+      for bj := bj + 1 to length(command) do
+        if (command[bj] = #32) and (command[bj - 1] <> #92)
           then goto break3
-          else splitted[b] := splitted[b] + command[a];
+          else splitted[bi] := splitted[bi] + command[bj];
     break3:
     end;
     { parse command }
     o := false;
     if splitted[0][1] <> COMMENT then
     begin
-      for b := 0 to COMMARRSIZE do
-        if splitted[0] = COMMANDS[b] then
+      for bi := 0 to COMMARRSIZE do
+        if splitted[0] = COMMANDS[bi] then
         begin
           o := true;
           goto break4;
@@ -131,7 +162,7 @@ begin
     break4:
       if o then
       begin
-        case b of
+        case bi of
            0: cmd_break(splitted[1]);
            1: cmd_help(splitted[1]);
            2: cmd_info;
@@ -158,7 +189,7 @@ begin
   writeln(HEADER1);
   writeln(HEADER2);
   writeln(HEADER3);
-  for b := 1 to length(HEADER2) do write('-');
+  for bk := 1 to length(HEADER2) do write('-');
   writeln;
   { initialize program memory, program tape, program status and breakpoint }
   cmd_reset(false);

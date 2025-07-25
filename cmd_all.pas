@@ -12,14 +12,15 @@
   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
   FOR A PARTICULAR PURPOSE. }
 
+
 { COMMAND 'break' }
 procedure cmd_break(p1: TSplitted);
 var
-  e:   byte;
+  err: byte;                                                      { error code }
   ec:  integer;
   ip1: integer;
 begin
-  e := 0;
+  err := 0;
   { check parameters }
   if length(p1) = 0 then
   begin
@@ -40,10 +41,10 @@ begin
       val(p1, ip1, ec);
       if ec = 0
       then
-        if (ip1 >= 0) and (ip1 <= 99) then e := 0 else e := 7
-      else e := 8;
+        if (ip1 >= 0) and (ip1 <= 99) then err := 0 else err := 7
+      else err := 8;
       { - error messages or primary operation }
-      if e > 0 then writeln(MESSAGE[e]) else
+      if err > 0 then writeln(MESSAGE[err]) else
       begin
         qb := ip1;
         writeln(MESSAGE[12], addzero(qb), '.');
@@ -55,56 +56,29 @@ end;
 { COMMAND 'help' }
 procedure cmd_help(p1: TSplitted);
 var
-  l: boolean;
+  l:  boolean;
+  bi: byte;
 begin
   l := false;
   { show description about all or selected command(s) }
-  for b := 0 to COMMARRSIZE do
-    if (length(p1) = 0) or (COMMANDS[b] = p1) then
+  for bi := 0 to COMMARRSIZE do
+    if (length(p1) = 0) or (COMMANDS[bi] = p1) then
     begin 
       l := true; 
-      writeln(COMMANDS_INF[1, b] + #9 + COMMANDS_INF[0, b]);
+      writeln(COMMANDS_INF[1, bi] + '  ' + COMMANDS_INF[0, bi]);
     end;    
   if not l then writeln(MESSAGE[0]);
 end;
 
-{ COMMAND 'info' }
-procedure cmd_info;
-begin
-  if length(machine.progname) = 0 then writeln(MESSAGE[20]) else
-  begin
-    { - name }
-    writeln(MESSAGE[22] + machine.progname);
-    { - short description }
-    writeln(MESSAGE[6] + machine.progdesc);
-    { - number of states }
-    cmd_state('');
-    { - set of symbol}
-    cmd_symbol('');
-    { - initial tape content and (relative) head start position }
-    cmd_tape('');
-    { - program list }
-    if length(machine.progname) > 0 then writeln;
-    cmd_prog;
-    { - optional commands from t36 file }
-    if length(t36com[0]) > 0 then
-    begin
-      writeln;
-      writeln(MESSAGE[51]);
-      for b := 0 to 15 do
-        if length(t36com[b]) > 0 then writeln(t36com[b]);
-    end;
-  end;
-end;
 
 { COMMAND 'limit' }
 procedure cmd_limit(p1: TSplitted);
 var
-  e:   byte;
+  err: byte;                                                      { error code }
   ec:  integer;
   ip1: integer;
 begin
-  e := 0;
+  err := 0;
   { check parameters }
   if length(p1) = 0 then
   begin
@@ -125,10 +99,10 @@ begin
       val(p1, ip1, ec);
       if ec = 0
       then
-        if ((ip1 >= 0) and (ip1 <= 32767)) then e := 0 else e := 7
-      else e := 8;
+        if ((ip1 >= 0) and (ip1 <= 32767)) then err := 0 else err := 7
+      else err := 8;
       { - error messages or primary operation }
-      if e > 0 then writeln(MESSAGE[e]) else
+      if err > 0 then writeln(MESSAGE[err]) else
       begin
         sl := ip1;
         writeln(MESSAGE[61], addzero(sl), '.');
@@ -140,13 +114,13 @@ end;
 { COMMAND 'load' }
 procedure cmd_load(p1: TSplitted);
 var
-  b, bb:          byte;
+  bi, bj:         byte;
   comline:        byte;
-  e:              byte;                                           { error code }
+  err:            byte;                                           { error code }
   ec, i:          integer;
   lab, seg:       byte;
   line:           byte;
-  qi:             byte;
+  qi:             integer;
   s, ss:          string[255];
   stat_mandatory: byte;                      { status byte of mandatory labels }
   stat_segment:   byte;                      { status byte of program segments }
@@ -160,7 +134,7 @@ const
 label
   error;
 
-{ 
+{
     bit   stat_segment          stat_mandatory (in PROG)
     ----------------------------------------------------
     D0    'PROG BEGIN' found    'NAME' found
@@ -176,22 +150,22 @@ label
 { SET ERROR CODE AND WRITE ERROR MESSAGE }
 procedure errmsg(b: byte);
 begin
-  e := b;
+  err := b;
   writeln(MESSAGE[b]);
 end;
 
 begin
-  e := 0;
+  err := 0;
   stat_mandatory := 0;
   stat_segment := 0;
   { check parameters }
-  if length(p1) = 0 then e := 7 else
+  if length(p1) = 0 then err := 7 else
   begin
     assign(t36file, p1);
     {$I-}
       reset(t36file);
     {$I+}
-    if ioresult <> 0 then e := 21 else
+    if ioresult <> 0 then err := 21 else
     begin
       cmd_reset(false);
       { read text file content }
@@ -205,14 +179,14 @@ begin
         { - remove space and tabulator from end of line }
         while (s[length(s)] = #32) or (s[1] = #9) do delete(s, length(s), 1);
         { - convert to uppercase and truncate to 40 }
-        for b := 1 to length(s) do s[b] := upcase(s[b]);
+        for bi := 1 to length(s) do s[bi] := upcase(s[bi]);
         { - check comment sign }
         if (s[1] <> COMMENT) and (length(s) > 0) then
         begin
           { search segment }
           seg := 255;
-          for b := 0 to 3 do
-            if s[1] + s[2] + s[3] + s[4] = LSEGMENTS[b] then seg := b;
+          for bi := 0 to 3 do
+            if s[1] + s[2] + s[3] + s[4] = LSEGMENTS[bi] then seg := bi;
           { - remove space and tabulator after label }
           while (s[5] = #32) or (s[5] = #9) do delete(s, 5, 1);
           if seg < 255 then
@@ -227,7 +201,7 @@ begin
                    { - PROG END found }
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $02;
-                 end; 
+                 end;
               1: { CARD found }
                  begin
                    { - CARD BEGIN found }
@@ -236,7 +210,7 @@ begin
                    { - CARD END found }
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $08;
-                 end;    
+                 end;
               2: { TAPE found }
                  begin
                    { - TAPE BEGIN found }
@@ -245,7 +219,7 @@ begin
                    { - TAPE END found }
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $20;
-                 end;    
+                 end;
               3: { COMM found }
                  begin
                    { - COMM BEGIN found }
@@ -254,13 +228,13 @@ begin
                    { - COMM END found }
                    if s[5] + s[6] + s[7] = LEND
                      then stat_segment := stat_segment or $80;
-                 end;    
-            end;            
+                 end;
+            end;
           end;
           { search label }
           lab := 255;
-          for b := 0 to 4 do
-            if s[1] + s[2] + s[3] + s[4] = LLABELS[b] then lab := b;
+          for bi := 0 to 4 do
+            if s[1] + s[2] + s[3] + s[4] = LLABELS[bi] then lab := bi;
           if lab < 255 then
           begin
             { - label is valid }
@@ -270,31 +244,29 @@ begin
                  begin
                    { - in the opened segment PROG }
                    stat_mandatory := stat_mandatory or $01;
-                   for b := 5 to length(s) do
-                       machine.progname := machine.progname + s[b];
+                   for bi := 5 to length(s) do
+                       machine.progname := machine.progname + s[bi];
                  end;
               1: { DESC found }
                  if stat_segment = $01 then
                  begin
                    { - in the opened segment PROG }
                    stat_mandatory := stat_mandatory or $02;
-                   for b := 5 to length(s) do
-                     machine.progdesc := machine.progdesc + s[b];
+                   for bi := 5 to length(s) do
+                     machine.progdesc := machine.progdesc + s[bi];
                  end;
               2: { SYMB found }
                  if stat_segment = $01 then
                  begin
                    { - in the opened segment PROG }
                    stat_mandatory := stat_mandatory or $04;
-                   for b := 5 to length(s) do
-                    machine.symbols := machine.symbols + s[b];
+                   for bi := 5 to length(s) do
+                    machine.symbols := machine.symbols + s[bi];                   
                  end else
                  begin
                    { - in the opened segment TAPE }
-                   ss := '';
-                   for b := 5 to length(s) do
-                     ss := ss + s[b];
-                   insert(ss, machine.tape, 100);
+                   for bi := 5 to length(s) do
+                     machine.tape[99 + bi - 5] := s[bi];
                  end;
               3: { STAT found }
                  if stat_segment = $01 then
@@ -302,28 +274,35 @@ begin
                    { - in the opened segment PROG }
                    stat_mandatory := stat_mandatory or $08;
                    ss := '';
-                   for b := 5 to length(s) do
-                     ss := ss + s[b];
+                   for bi := 5 to length(s) do
+                     ss := ss + s[bi];
                    val(ss, i, ec);
-                   { - minimum value is two: q00 and q01 }
-                   if i < 2 then machine.states := 2;
                    { - error messages }
-                   if ec > 0 then e := 1;
-                   if i > 99 then e := 2;
-                   if e > 0 then goto error else machine.states := i;
+                   if ec > 0 then err := 1 else
+                     if i > 99 then err := 2;
+                   if err > 0 then goto error else
+                   begin
+                     { - minimum value is two: q00 and q01 }
+                     if i < 2 then machine.states := 2;
+                     machine.states := i;
+                   end;
                  end;
               4: { SPOS found }
                  if stat_segment = $11 then
                  begin
                    { - in the opened segment PROG and TAPE }
                    ss := '';
-                   for b := 5 to length(s) do
-                     ss := ss + s[b];
+                   for bi := 5 to length(s) do
+                     ss := ss + s[bi];
                    val(ss, i, ec);
                    { - error messages }
-                   if ec > 0 then e := 3;
-                   if (i < 50) or (i > 200) then e := 4;
-                   if e > 0 then goto error else machine.tapepos := i;
+                   if ec > 0 then err := 3;
+                   if err > 0 then goto error else
+                   begin
+                     if (i < 50) or (i > 200)
+                       then err := 4
+                       else machine.tapepos := i;
+                   end;
                  end;
             end;
           end;
@@ -333,50 +312,50 @@ begin
             { STnn found in the opened segment PROG and CARD }
             { - remove all spaces and tabulators }
             ss := '';
-            for b := 1 to length(s) do
-              if (s[b] <> #32) and (s[b] <> #9) then ss := ss + s[b];
+            for bi := 1 to length(s) do
+              if (s[bi] <> #32) and (s[bi] <> #9) then ss := ss + s[bi];
             { qi }
             val(ss[3] + ss[4], qi, ec);
             { - check value }
-            if ec > 0 then e := 32;
-            if qi > 99 then e := 33;
-            if e > 0 then goto error;
+            if ec > 0 then err := 32 else
+              if qi > 99 then err := 33;
+            if err > 0 then goto error;
             delete(ss, 1, 4);
-            b := 0;
-            while (length(ss) >= (b * 5 + 5)) and (b < 51) do
+            bi := 0;
+            while (length(ss) >= (bi * 5 + 5)) and (bi < 51) do
             begin
               { sj }
-              machine.rules[qi, b].sj := ss[b * 5 + 1];
+              machine.rules[qi, bi].sj := ss[bi * 5 + 1];
               { - check value }
               ec := 1;
-              for bb := 1 to length(machine.symbols) do
-                if machine.rules[qi, b].sj = machine.symbols[bb] then ec := 0;
-              if ec > 0 then e := 37;
-              if e > 0 then goto error;
+              for bj := 1 to length(machine.symbols) do
+                if machine.rules[qi, bi].sj = machine.symbols[bj] then ec := 0;
+              if ec > 0 then err := 37;
+              if err > 0 then goto error;
               { sk }
-              machine.rules[qi, b].sk := ss[b * 5 + 2];
+              machine.rules[qi, bi].sk := ss[bi * 5 + 2];
               { - check value }
               ec := 1;
-              for bb := 1 to length(machine.symbols) do
-                if machine.rules[qi, b].sk = machine.symbols[bb] then ec := 0;
-              if ec > 0 then e := 38;
-              if e > 0 then goto error;
+              for bj := 1 to length(machine.symbols) do
+                if machine.rules[qi, bi].sk = machine.symbols[bj] then ec := 0;
+              if ec > 0 then err := 38;
+              if err > 0 then goto error;
               { D }
-              machine.rules[qi, b].D := ss[b * 5 + 3];
+              machine.rules[qi, bi].D := ss[bi * 5 + 3];
               { - check value }
               ec := 1;
-              for bb := 1 to length(HMD) do
-                if machine.rules[qi, b].D = HMD[bb] then ec := 0;
-              if ec > 0 then e := 34;
-              if e > 0 then goto error;
+              for bj := 1 to length(HMD) do
+                if machine.rules[qi, bi].D = HMD[bj] then ec := 0;
+              if ec > 0 then err := 34;
+              if err > 0 then goto error;
               { qm }
-              val(ss[b * 5 + 4] + ss[b * 5 + 5], i, ec);
+              val(ss[bi * 5 + 4] + ss[bi * 5 + 5], i, ec);
               { - check value }
-              if ec > 0 then e := 35;
-              if (i < 0) or (i > 99) then e := 36;
-              if e > 0 then goto error;
-              machine.rules[qi, b].qm := i;
-              b := b + 1;
+              if ec > 0 then err := 35 else
+                if (i < 0) or (i > 99) then err := 36;
+              if err > 0 then goto error;
+              machine.rules[qi, bi].qm := i;
+              bi := bi + 1;
             end;
           end;
           { load command line commands }
@@ -394,7 +373,7 @@ begin
       close(t36file);
       { error messages }
       { - bad or missing values }
-      if e > 0 then writeln(MESSAGE[e]);
+      if err > 0 then writeln(MESSAGE[err]);
       { - missing mandatory tags }
       if (stat_segment and $01) <> $01 then errmsg(39);
       if (stat_segment and $02) <> $02 then errmsg(40);
@@ -409,13 +388,13 @@ begin
         if (stat_segment and $20) <> $20 then errmsg(43);
       if (stat_segment and $40) = $40 then
         if (stat_segment and $80) <> $80 then errmsg(44);
-      if e > 0 then cmd_reset(false);
+      if err > 0 then cmd_reset(false);
     end;
   end;
   { - file open errors }
-  case e of
-     7: writeln(MESSAGE[e]);
-    21: writeln(MESSAGE[e] + p1 + '.');
+  case err of
+     7: writeln(MESSAGE[err]);
+    21: writeln(MESSAGE[err] + p1 + '.');
   else
     begin
       { create backup }
@@ -424,15 +403,15 @@ begin
       machine.aqi := 1;
       writeln(MESSAGE[5]);
       { convert commands to lowercase }
-      for b := 0 to 15 do
-        if length(t36com[b]) > 0 then
-          for bb := 1 to length(t36com[b]) do
-            if (ord(t36com[b][bb]) >= 65) and (ord(t36com[b][bb]) <= 90) then
-            t36com[b][bb] := chr(ord(t36com[b][bb]) + 32);
+      for bi := 0 to 15 do
+        if length(t36com[bi]) > 0 then
+          for bj := 1 to length(t36com[bi]) do
+            if (ord(t36com[bi][bj]) >= 65) and (ord(t36com[bi][bj]) <= 90) then
+            t36com[bi][bj] := chr(ord(t36com[bi][bj]) + 32);
       { run commands }
-      for b := 0 to 15 do
-        if length(t36com[b]) > 0 then
-          if parsingcommand(t36com[b]) then halt;
+      for bi := 0 to 15 do
+        if length(t36com[bi]) > 0 then
+          if parsingcommand(t36com[bi]) then halt;
     end;
   end;
 end;
@@ -457,44 +436,8 @@ begin
   end;
 end;
 
-{ COMMAND 'reset' }
-procedure cmd_reset(v: boolean);
-var
-  b, bb: byte;
-begin
-  { reset machine configuration }
-  with machine do
-  begin
-    progdesc := '';
-    progname := '';
-    progcount := 0;
-    aqi := 1;
-    for b := 0 to 99 do
-      for bb := 0 to 39 do
-      begin
-        rules[b, bb].D := 'R';
-        rules[b, bb].qm := 1; 
-        rules[b, bb].Sj := #0; 
-        rules[b, bb].Sk := #0;
-      end;
-    states := 2;
-    symbols := SPACE;
-    tapepos := 1;
-    tape := '';
-    tapeposbak := tapepos;
-    tapebak := tape;
-    for b := 1 to 255 do tape := tape + SPACE;
-  end;
-  { reset t36 command buffer } 
-  for b := 0 to 15 do t36com[b] := '';
-  { reset program others }
-  qb := 255;
-  sl := 32767;
-  if v then writeln(MESSAGE[26]);
-end;
-
 { COMMAND 'restore' }
-procedure cmd_restore(v: boolean);
+procedure cmd_restore(verbose: boolean);
 begin
   { restore Turing machine to original state }
   with machine do
@@ -504,17 +447,17 @@ begin
     tapepos := tapeposbak;
     tape := tapebak;
   end;
-  if v then writeln(MESSAGE[52]);
+  if verbose then writeln(MESSAGE[52]);
 end;
 
 { COMMAND 'state' }
 procedure cmd_state(p1: TSplitted);
 var
-  e:   byte;
-  ec:  integer;
-  ip1: integer;
+  err:   byte;                                                    { error code }
+  ec:    integer;
+  ip1:   integer;
 begin
-  e := 0;
+  err := 0;
   { check parameters }
   if length(p1) = 0 then
   begin
@@ -526,10 +469,10 @@ begin
     val(p1, ip1, ec);
     if ec = 0
     then
-      if (ip1 >= 2) and (ip1 <= 99) then e := 0 else e := 8
-    else e := 7;
+      if (ip1 >= 2) and (ip1 <= 99) then err := 0 else err := 8
+    else err := 7;
     { error message or primary operation }
-    if e > 0 then writeln(MESSAGE[e]) else
+    if err > 0 then writeln(MESSAGE[err]) else
     begin
       machine.states := ip1;
       writeln(MESSAGE[14], machine.states, '.');
@@ -540,14 +483,14 @@ end;
 { COMMAND 'symbol' }
 procedure cmd_symbol(p1: TSplitted);
 var
-  c: char;
-  b, bb: byte;
-  e:   byte;
-  s: string[40];
+  c:      char;
+  bi, bj: byte;
+  err:    byte;                                                   { error code }
+  s:      string[40];
 label
   break1;
 begin
-  e := 0;
+  err := 0;
   { check parameters }
   if length(p1) = 0 then
   begin
@@ -565,29 +508,29 @@ begin
       { set symbol list }
       s := p1;
       { - convert to uppercase and truncate to 40 }
-      for b := 1 to length(p1) do s[b] := upcase(s[b]);
+      for bi := 1 to length(p1) do s[bi] := upcase(s[bi]);
       { - remove extra characters }
-      for b := 1 to length(s) - 1 do
-        for bb := 1 to length(s) - 1 do
-          if s[bb] > s[bb + 1] then
+      for bi := 1 to length(s) - 1 do
+        for bj := 1 to length(s) - 1 do
+          if s[bj] > s[bj + 1] then
           begin
-            c := s[bb];
-            s[bb] := s[bb + 1];
-            s[bb + 1] := c;
+            c := s[bj];
+            s[bj] := s[bj + 1];
+            s[bj + 1] := c;
           end;
-      for b := 1 to 40 do
+      for bi := 1 to 40 do
       begin
-        if b = length(s) then goto break1;
-        if s[b] = s[b + 1] then
+        if bi = length(s) then goto break1;
+        if s[bi] = s[bi + 1] then
         begin
-         delete(s, b, 1);
-         e := 18;
+         delete(s, bi, 1);
+         err := 18;
         end;
       end;
     break1:
       { warning messages }
       if length(p1) > 40 then writeln(MESSAGE[19]);
-      if e = 18 then writeln(MESSAGE[18]);
+      if err = 18 then writeln(MESSAGE[18]);
       machine.symbols := SPACE + s;
       writeln(MESSAGE[17], machine.symbols, '''.');
     end;
@@ -597,8 +540,8 @@ end;
 { COMMAND 'tape' }
 procedure cmd_tape(p1: TSplitted);
 var
-  b: byte;
-  s: string;
+  bi: byte;
+  s:  string[255];
 begin
   { check parameters }
   if length(p1) = 0 then
@@ -618,18 +561,19 @@ begin
   begin
    if p1 = '-' then
     begin
-      for b := 1 to 255 do machine.tape[b] := SPACE;
+      for bi := 1 to 255 do machine.tape[bi] := SPACE;
       { reset symbol list }
       writeln(MESSAGE[25])
     end else
     begin
       { set symbol list }
       { - conversion to uppercase and truncate to 40 }
-      for b := 1 to length(p1) do s := upcase(p1);
+      for bi := 1 to length(p1) do s := upcase(p1[bi]);
       { - warning messages }
       if length(p1) > 50 then writeln(MESSAGE[27]);
-      for b := 1 to 255 do machine.tape[b] := SPACE;
-      insert(s, machine.tape, 100);
+      for bi := 1 to 255 do machine.tape[bi] := SPACE;
+      for bi := 1 to length(s) do
+        machine.tape[99 + bi] := s[bi];
       writeln(MESSAGE[24], s, '.');
     end;
   end;  
@@ -638,15 +582,47 @@ end;
 { COMMAND 'trace' }
 procedure cmd_trace(p1: TSplitted);
 var
- e: byte;
+  err: byte;                                                      { error code }
 begin
-  e := 0;
+  err := 0;
   { check parameters and set value }
   if length(p1) = 0 then trace := not trace else
-    if upcase(p1) = 'ON' then trace := true else
-      if upcase(p1) = 'OFF' then trace := false else
-      e := 8;
+    if upcase(p1[1]) + upcase(p1[2])  = 'ON' then trace := true else
+      if upcase(p1[1]) + upcase(p1[2]) = 'OFF' then trace := false else
+      err := 8;
   { error message or primary operation }
-  if e > 0 then writeln(MESSAGE[e]) else
+  if err > 0 then writeln(MESSAGE[err]) else
     if trace then writeln(MESSAGE[30]) else writeln(MESSAGE[31]);
 end;
+
+{ COMMAND 'info' }
+procedure cmd_info;
+var
+  bi: byte;
+begin
+  if length(machine.progname) = 0 then writeln(MESSAGE[20]) else
+  begin
+    { - name }
+    writeln(MESSAGE[22] + machine.progname);
+    { - short description }
+    writeln(MESSAGE[6] + machine.progdesc);
+    { - number of states }
+    cmd_state('');
+    { - set of symbol}
+    cmd_symbol('');
+    { - initial tape content and (relative) head start position }
+    cmd_tape('');
+    { - program list }
+    if length(machine.progname) > 0 then writeln;
+    cmd_prog;
+    { - optional commands from t36 file }
+    if length(t36com[0]) > 0 then
+    begin
+      writeln;
+      writeln(MESSAGE[51]);
+      for bi := 0 to 15 do
+        if length(t36com[bi]) > 0 then writeln(t36com[bi]);
+    end;
+  end;
+end;
+

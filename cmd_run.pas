@@ -15,10 +15,10 @@
 { COMMAND 'run' }
 procedure cmd_run(p1: boolean; p2: TSplitted);
 var
-  b: byte;
-  e: byte;
-  ec: integer;
-  ip2: integer;
+  bi:      byte;
+  err:     byte;
+  ec:      integer;
+  ip2:     integer;
   verbose: boolean;
 label
   stop, error, found;
@@ -30,16 +30,16 @@ begin
     val(p2, ip2, ec);
     if ec = 0
     then
-      if (ip2 >= -50) and (ip2 <= 50) then e := 0 else e := 64
-    else e := 65;
+      if (ip2 >= -50) and (ip2 <= 50) then err := 0 else err := 64
+    else err := 65;
     { - error messages or set temporary head start position }
-    if e > 0 then writeln(MESSAGE[e]) else
+    if err > 0 then writeln(MESSAGE[err]) else
     begin
       machine.tapepos := ip2;
       writeln(MESSAGE[66], machine.tapepos, '.');
     end;
   end;
-  e := 0;
+  err := 0;
   { show initial data }
   cmd_tape('');
   writeln(MESSAGE[53]);
@@ -49,23 +49,24 @@ begin
   machine.progcount := 0;
   repeat
     machine.progcount := machine.progcount + 1;
-    if verbose then write(machine.progcount:5, '   ', addzero(machine.tapepos), '   ',
-                        addzero(machine.aqi), '   ') else write('#');
+    if verbose then
+      write(machine.progcount:5, '   ', addzero(machine.tapepos), '   ',
+            addzero(machine.aqi), '   ') else write('#');
     machine.asj := machine.tape[machine.tapepos + 99]; 
     if verbose then write(machine.asj, '   ');
-    for b := 0 to 39 do
-      if machine.rules[machine.aqi, b].sj = machine.asj then goto found;
-    e := 56;
+    for bi := 0 to 39 do
+      if machine.rules[machine.aqi, bi].sj = machine.asj then goto found;
+    err := 56;
     goto error;
  found:
-    machine.tape[machine.tapepos + 99] := machine.rules[machine.aqi, b].sk;
+    machine.tape[machine.tapepos + 99] := machine.rules[machine.aqi, bi].sk;
     if verbose then write(machine.tape[machine.tapepos + 99], '  ');
-    case machine.rules[machine.aqi, b].D of
+    case machine.rules[machine.aqi, bi].D of
       'R': machine.tapepos := machine.tapepos + 1;
       'L': machine.tapepos := machine.tapepos - 1;
     end;
-    if verbose then write(machine.rules[machine.aqi, b].D, '  ');
-    machine.aqi := machine.rules[machine.aqi, b].qm;
+    if verbose then write(machine.rules[machine.aqi, bi].D, '  ');
+    machine.aqi := machine.rules[machine.aqi, bi].qm;
     if verbose then writeln(addzero(machine.aqi));
     { - check program set limit}   
     if machine.progcount = sl then
@@ -91,7 +92,7 @@ begin
   goto stop;
 error:
   { machine is stopped }
-  writeln(MESSAGE[e]);
+  writeln(MESSAGE[err]);
 stop:
   writeln(MESSAGE[54]);
   { show final data (result) }

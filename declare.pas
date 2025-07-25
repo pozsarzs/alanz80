@@ -15,11 +15,11 @@
 type
   T4tuple =     record                                            { tuple type }
     d:          char;                                { head movement direction }
-    qm:         byte;                                            { final state }
+    qm:         integer;                                         { final state }
     sj:         char;                                            { read symbol }
     sk:         char;                                   { symbol to be written }
   end;
-  TTuring =     record                                    { Turing machine type}
+  TTuring =     record                                   { Turing machine type }
     aqi:        byte;                                           { actual state }
     asj:        char;                                            { read symbol }
     ask:        char;                                   { symbol to be written }
@@ -27,7 +27,7 @@ type
     progdesc:   string[64];                           { description of program }
     progname:   string[8];                                   { name of program }
     rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
-    states:     byte;                                       { number of states }
+    states:     integer;                                    { number of states }
     symbols:    string[40];                                     { symbolum set }
     tape:       string[255];                                            { tape }
     tapepos:    integer;                              { relative head position }
@@ -37,9 +37,9 @@ type
   TSplitted =   string[64];
   TTwoDigit =   string[2];
 var
-  b:            byte;
+  bk:           byte;
   com:          TCommand;                               { command line content }
-  sl:           integer;                                  { program step limit } 
+  sl:           integer;                                  { program step limit }
   machine:      TTuring;                        { Turing machine configuration }
   qb:           byte;                                     { breakpoint address }
   quit:         boolean;                                          { allow exit }
@@ -52,7 +52,7 @@ const
   COMMARRSIZE = 14;
   COMMENT =     #59;
   SPACE =       #95;
-  HMD =         'LSR';                                { head moving directions }
+  HMD:          string[3] = 'LSR';                    { head moving directions }
   { UNCOMMENT CORRESPONDING LINES: }
   HEADER1 =     'AlanZ80 v0.1 for CP/M';
   { HEADER1 =     'AlanZ80 v0.1 for DOS'; }
@@ -64,7 +64,7 @@ const
   COMMANDS:     array[0..COMMARRSIZE] of string[7] = ('break', 'help', 'info',
                 'load', 'prog', 'quit', 'reset', 'run', 'state', 'step',
                 'symbol', 'tape', 'trace', 'limit', 'restore');
-  COMMANDS_INF: array[0..1,0..COMMARRSIZE] of string[63] = ((
+  COMMANDS_INF: array[0..1, 0..COMMARRSIZE] of string[63] = ((
                 'set, get and reset breakpoint state (qb)',
                 'help with using the program',
                 'show all information about this machine',
@@ -79,7 +79,7 @@ const
                 'set, get and reset tape content',
                 'turn tracking on and off',
                 'set, get and reset number of steps',
-                'restore Turing-machine to original state'),(
+                'restore Turing-machine to original state'), (
                 'break [01..99|-]           ',
                 'help [command]             ',
                 'info                       ',

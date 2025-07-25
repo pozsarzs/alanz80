@@ -74,7 +74,7 @@ begin
     progname := '';
     progcount := 0;
     aqi := 1;
-    for bi := 0 to 99 do
+    for bi := 0 to 49 do
       for bj := 0 to 39 do
       begin
         rules[bi, bj].D := 'R';
@@ -107,6 +107,7 @@ var
 label
   break1, break2, break3, break4;
 
+{$i cmd_load.pas}
 {$i cmd_all.pas}
 {$i cmd_run.pas}
 

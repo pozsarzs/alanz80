@@ -38,7 +38,7 @@ Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>
 |architecture            |ix86, Z80                                            |
 |OS                      |CP/M and DOS (and others, see comments in the source.|
 |symbol set              |up to 40 characters                                  |
-|state set               |up to 100 states                                     |
+|state set               |up to 50 states                                      |
 |virtual tape length     |255 cell                                             |
 |tape input data length  |50 cell                                              |
 |example program         |4 scripts                                            |
@@ -108,11 +108,11 @@ The CONF section specifies the number of states and the symbol set used by the m
 
 The state is called an m-configuration in Turing terminology. The finite set of states is as follows:
 
-Q = {q00..q99}, where the
+Q = {q00..q49}, where the
 
 - q00 is the mandatory final state,
 - q01 is the mandatory start state,
-- q02-q99 are optional additional states.
+- q02-q49 are optional additional states.
 
 The cardinality of the set is at least two, even if less is specified in the CONF section.
 
@@ -168,7 +168,7 @@ The program can be controlled with the following command line commands.
 
 |   |command                     |description                                 |
 |--:|----------------------------|--------------------------------------------|
-|  1|`break [01..99\|-]`         |set, get and reset breakpoint state (qb)    |
+|  1|`break [01..49\|-]`         |set, get and reset breakpoint state (qb)    |
 |  2|`help [command]`            |help with using the program                 |
 |  3|`info`                      |show all information about this machine     |
 |  4|`limit [10..32767\|-]`      |set, get and reset number of steps          |
@@ -178,7 +178,7 @@ The program can be controlled with the following command line commands.
 |  8|`reset`                     |reset program                               |
 |  9|`restore`                   |restore Turing-machine to original state    |
 | 10|`run [head pos.: -50..+50]` |run program from head position              |
-| 11|`state [2..99]`             |set and get number of state (\|Q\|)         |
+| 11|`state [2..49]`             |set and get number of state (\|Q\|)         |
 | 12|`step [head pos.: -50..+50]`|run program step-by-step from head position |
 | 13|`symbol [symbols\|-]`       |set, get and reset symbol set (S)           |
 | 14|`tape [content\|-]`         |set, get and reset tape content             |

@@ -26,7 +26,7 @@ type
     progcount:  integer;                                { program step counter }
     progdesc:   string[64];                           { description of program }
     progname:   string[8];                                   { name of program }
-    rules:      array[0..99,0..39] of T4tuple;  { actual state with its tuples }
+    rules:      array[0..49, 0..39] of T4tuple; { actual state with its tuples }
     states:     integer;                                    { number of states }
     symbols:    string[40];                                     { symbolum set }
     tape:       string[255];                                            { tape }
@@ -80,7 +80,7 @@ const
                 'turn tracking on and off',
                 'set, get and reset number of steps',
                 'restore Turing-machine to original state'), (
-                'break [01..99|-]           ',
+                'break [01..49|-]           ',
                 'help [command]             ',
                 'info                       ',
                 'load filename.t36          ',
@@ -88,7 +88,7 @@ const
                 'quit                       ',
                 'reset [tm]                 ',
                 'run [head pos.: -50..+50]  ',
-                'state [2..99]              ',
+                'state [2..49]              ',
                 'step [head pos.: -50..+50] ',
                 'symbol [symbols|-]         ',
                 'tape [content|-]           ',

@@ -17,7 +17,7 @@ The Turing machine was invented in 1936 by Alan Turing, who called it an "a-mach
 
 Like Turing's original model, this implementation can only work in three ways. What is different is the physical limitations of the implementation, as it cannot be infinite. The number of states and tape symbols is limited, which is still enough to write a sufficiently complex algorithm. The length of the virtual tape is not infinite and the starting position, where processing starts by default, is halfway along the entire length. The starting position can be changed.
 
-The machine expects the program via standard input, which can be entered manually or by redirection. The program has both mandatory and optional sections. In the mandatory section, the number of states, symbols, and algorithm are defined. In the optional section, the initial contents of the tape can be specified; if there is none, the machine prompts for it. In addition, simple commands can be specified that affect the machine's operation during runtime.
+The machine reads the program from the t36 file. The program has both mandatory and optional sections. In the mandatory section, the number of states, symbols, and algorithm are defined. In the optional section, the initial contents of the tape can be specified; if there is none, the machine prompts for it. In addition, simple commands can be specified that affect the machine's operation during runtime.
 
 Copyright (C) 2025 Pozsár Zsolt <pozsarzs@gmail.com>  
 
@@ -183,4 +183,3 @@ The program can be controlled with the following command line commands.
 [^1]: ["On Computable Numbers, with an Application to the Entscheidungsproblem"](https://www.cs.virginia.edu/~robins/Turing_Paper_1936.pdf)
 
 [^2]: [Wikipedia – Turing machine, CC BY-SA 4.0](https://en.wikipedia.org/wiki/Turing_machine)
-

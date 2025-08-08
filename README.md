@@ -151,8 +151,8 @@ Note:
 - sk is the symbol to be written to the tape, sk ∈ S.
 
 In the CARD section of the program, the 5-tuples must be specified in the
-following form `01 abL01 __N00`, where the:
-- `01` is the initial state (qi),
+following form `ST01 abL01 __N00`, where the:
+- `ST01` is the initial state (qi),
 - `a` and `_` in the groups are read symbols,
 - `b` and `_` in the groups are symbols to be written,
 - `L` and `N` in the groups are head moving directions,

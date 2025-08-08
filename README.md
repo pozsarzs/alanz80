@@ -98,7 +98,7 @@ COMM END
 PROG END
 ```
 
-The CONF section specifies the number of states and the symbol set used by the machine. The algorithm in the CODE section will be checked against these.
+The CONF section specifies the number of states and the symbol set used by the machine. The algorithm in the CARD section will be checked against these.
 
 #### State set
 
@@ -150,7 +150,7 @@ Note:
 - sj is the actual symbol read from the tape, sj ∈ S.
 - sk is the symbol to be written to the tape, sk ∈ S.
 
-In the CODE section of the program, the 5-tuples must be specified in the
+In the CARD section of the program, the 5-tuples must be specified in the
 following form `01 abL01 __N00`, where the:
 - `01` is the initial state (qi),
 - `a` and `_` in the groups are read symbols,
